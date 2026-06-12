@@ -1,11 +1,767 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConquerD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConquerD &ndash; Private Voice, Chat, Games, and Architecture</title>
+  <meta name="description" content="ConquerD is invite-only peer-to-peer voice, chat, and browser games with optional supernode relay, capability modules, WebTransport game relay, and full protocol reference." />
+  <meta property="og:title" content="ConquerD &ndash; Private Voice, Chat &amp; Games" />
+  <meta property="og:description" content="Invite-only P2P voice and chat with game relay, module negotiation, architecture details, quick start, and code signing policy." />
+  <meta property="og:url" content="https://conquerd.com" />
+  <link rel="canonical" href="https://conquerd.com/" />
+  <link rel="icon" href="conquerd.ico" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .hero-logo { margin-bottom: 1.5rem; }
+    .wordmark-svg { width: min(620px, 94vw); height: auto; }
+    .highlight-grid { display: grid; gap: 1.15rem; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+    .pillar-strip {
+      display: grid; gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .section-nav {
+      display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
+      margin-top: 1.1rem;
+    }
+    .section-nav a {
+      color: var(--muted); text-decoration: none; font-size: .82rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; padding: .3rem .75rem;
+      transition: border-color .2s, color .2s;
+    }
+    .section-nav a:hover { border-color: var(--accent); color: var(--text); }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    .table-scroll {
+      overflow-x: auto;
+      border-radius: var(--radius);
+    }
+    .arch-diagram-wrap {
+      overflow-x: auto;
+      margin: 1.2rem 0 1rem;
+    }
+    .arch-infra {
+      margin-top: 1rem;
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+    .arch-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: .35rem .85rem;
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .arch-chip.accent { border-color: rgba(91,127,255,.4); color: var(--accent); }
+    .arch-chip.green { border-color: rgba(52,211,153,.4); color: var(--green); }
+    .arch-chip.purple { border-color: rgba(167,139,250,.4); color: var(--accent2); }
+    [id] { scroll-margin-top: 82px; }
+    @media (max-width: 860px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .pillar-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+    /* Install tabs (CSS-only, no JS) */
+    .install-tabs { margin-top: .25rem; }
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.4rem; gap: 0; }
+    .tab-label {
+      padding: .55rem 1.25rem; cursor: pointer; color: var(--muted);
+      font-size: .88rem; font-weight: 500; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: color .15s, border-color .15s; user-select: none;
+    }
+    .tab-label:hover { color: var(--text); }
+    #itab-binary:checked ~ .tab-bar label[for="itab-binary"],
+    #itab-dev:checked ~ .tab-bar label[for="itab-dev"] {
+      color: var(--accent); border-bottom-color: var(--accent);
+    }
+    .tab-panel { display: none; }
+    #itab-binary:checked ~ .tab-panels .panel-binary,
+    #itab-dev:checked ~ .tab-panels .panel-dev { display: block; }
+    .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
+    .platform-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; display: flex; flex-direction: column; }
+    .platform-card h4 { margin: 0 0 .35rem; font-size: .95rem; }
+    .platform-tag {
+      display: inline-block; font-size: .72rem; font-weight: 600; color: var(--accent);
+      background: rgba(91,127,255,.08); border: 1px solid rgba(91,127,255,.2);
+      border-radius: 4px; padding: .12rem .5rem; margin-bottom: .5rem; align-self: flex-start;
+    }
+    .platform-card p { font-size: .83rem; color: var(--muted); margin: .3rem 0 .65rem; line-height: 1.5; flex: 1; }
+    @media (max-width: 860px) { .platform-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px) { .platform-grid { grid-template-columns: 1fr; } }
+    /* Dev steps: full-width single column so code blocks have maximum horizontal space */
+    .panel-dev .steps { grid-template-columns: 1fr; gap: .85rem; }
+    .panel-dev .step { display: grid; grid-template-columns: auto 1fr; column-gap: 1.1rem; align-items: start; }
+    .panel-dev .step-num { margin-bottom: 0; margin-top: .12rem; }
+    .panel-dev .step > * { grid-column: 2; }
+    .panel-dev .step > .step-num { grid-column: 1; grid-row: 1 / 99; }
+    .panel-dev .step pre { overflow-x: auto; white-space: pre; font-size: .78rem; margin-top: .55rem; }
+  </style>
 </head>
 <body>
-    <h1>Coming Soon... </h1>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo.svg" alt="" width="48" height="22" aria-hidden="true" />
+  </a>
+  <ul>
+    <li><a href="#quickstart">Quick Start</a></li>
+    <li><a href="#full-features">Features</a></li>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#architecture-deep">Architecture</a></li>
+    <li><a href="https://github.com/ConquerD/ConquerD" class="nav-cta">GitHub &rarr;</a></li>
+  </ul>
+</nav>
+
+<section class="hero" id="top">
+  <div class="hero-logo">
+    <img class="wordmark-svg" src="logo-full.svg" alt="ConquerD://" />
+  </div>
+
+  <div class="badge"><span class="dot"></span>v1.0.0-alpha &nbsp;&middot;&nbsp; 488 tests &nbsp;&middot;&nbsp; MIT</div>
+  <p class="tagline">Private voice and chat for your group.<br />No accounts. No subscriptions. No one owns your server.</p>
+
+  <div class="hero-actions">
+    <a href="#quickstart" class="btn btn-primary">Download &amp; Install</a>
+    <a href="#full-features" class="btn btn-ghost">Feature Reference &rarr;</a>
+    <a href="#architecture-deep" class="btn btn-ghost">Architecture &rarr;</a>
+  </div>
+
+  <div class="section-nav" aria-label="On this page">
+    <a href="#quickstart">Quick Start</a>
+    <a href="#highlights">Highlights</a>
+    <a href="#full-features">Full Features</a>
+    <a href="#modules">Feature Modules</a>
+    <a href="#architecture-deep">Architecture</a>
+    <a href="#code-signing-policy">Code Signing</a>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section style="padding:0;">
+  <div class="container">
+    <div class="pillar-strip">
+      <div class="pillar">
+        <div class="icon">&#x1F511;</div>
+        <h3>No Accounts</h3>
+        <p>Your identity is a local Ed25519 key pair. No sign-up, no password reset flow, no account lockout.</p>
+      </div>
+      <div class="pillar">
+        <div class="icon">&#x1F512;</div>
+        <h3>End-to-End Encrypted</h3>
+        <p>Handshake uses ephemeral X25519 + HKDF + AES-GCM. Signaling is signed, transcript-bound, and replay-resistant.</p>
+      </div>
+      <div class="pillar">
+        <div class="icon">&#x1F6AB;</div>
+        <h3>No Central Platform</h3>
+        <p>ConquerD has no account backend. Sessions are direct when possible, with optional community supernode relay.</p>
+      </div>
+      <div class="pillar">
+        <div class="icon">&#x1F517;</div>
+        <h3>Invite-Only</h3>
+        <p>Peers connect by signed conquerd:// invites that are timestamped and expiry-checked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="container">
+    <p class="section-label">Getting Started</p>
+    <h2>Quick Start</h2>
+    <p class="section-sub">Choose your path &mdash; grab an alpha test build or build from source.</p>
+
+    <div class="card card-accent" style="margin-bottom:1.4rem; padding:.85rem 1.1rem;">
+      <p style="margin:0; font-size:.85rem; color:var(--muted); line-height:1.6;"><strong style="color:var(--text);">Alpha testing.</strong> ConquerD is in its first public alpha. Test builds are published on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener">nightly release</a> and are <strong>not yet code-signed</strong> &mdash; your OS may show a SmartScreen or Gatekeeper warning. Code signing for release builds is planned once alpha testing stabilises.</p>
+    </div>
+
+    <div class="install-tabs">
+      <input type="radio" name="itab" id="itab-binary" checked hidden />
+      <input type="radio" name="itab" id="itab-dev" hidden />
+
+      <div class="tab-bar">
+        <label for="itab-binary" class="tab-label">&#x2B07;&nbsp; Download &amp; Install</label>
+        <label for="itab-dev" class="tab-label">&#x1F6E0;&nbsp; I&rsquo;m a Developer</label>
+      </div>
+
+      <div class="tab-panels">
+
+        <div class="tab-panel panel-binary">
+          <div class="platform-grid">
+            <div class="platform-card">
+              <div class="platform-tag">Windows</div>
+              <h4>Installer (alpha)</h4>
+              <p>Run the installer and launch from the Start Menu. Unsigned during alpha &mdash; click <em>More info &rarr; Run anyway</em> if SmartScreen prompts.</p>
+              <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
+            </div>
+            <div class="platform-card">
+              <div class="platform-tag">macOS</div>
+              <h4>App bundle (alpha)</h4>
+              <p>Open the DMG and drag to Applications. Unsigned during alpha &mdash; right-click the app and choose <em>Open</em> to bypass Gatekeeper.</p>
+              <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
+            </div>
+            <div class="platform-card">
+              <div class="platform-tag">Linux</div>
+              <h4>AppImage (alpha)</h4>
+              <p>Mark executable and run. Verify your download against the published SHA-256 checksum.</p>
+              <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
+            </div>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <h3>Launch &amp; Onboard</h3>
+              <p>On first run, ConquerD generates a local Ed25519 identity and walks you through setting a display name and optional supernode address.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <h3>Create an Invite</h3>
+              <p>Click <strong>+</strong> to generate a signed <code>conquerd://</code> invite link. Share it with a trusted peer via any channel &mdash; links are timestamped and expiry-checked on both ends.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <h3>Connect</h3>
+              <p>ConquerD tries direct QUIC first, then UDP hole punch, then supernode QUIC relay &mdash; automatic for most networks with no configuration required.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <h3>Communicate</h3>
+              <p>Chat, voice, and file transfer are available immediately after handshake. Delivery states and connection quality display in real time.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel panel-dev">
+          <div class="card" style="margin-bottom:1.2rem; padding:1rem 1.2rem;">
+            <h4 style="margin:0 0 .6rem; font-size:.95rem;">Prerequisites</h4>
+            <ul class="feat-list">
+              <li><strong>Rust toolchain</strong> &mdash; install via <a href="https://rustup.rs" target="_blank" rel="noopener">rustup.rs</a></li>
+              <li><strong>Qt 6.x</strong> &mdash; via the <a href="https://www.qt.io/download-qt-installer" target="_blank" rel="noopener">Qt Online Installer</a> (select Qt 6.8+, your platform kit)</li>
+              <li><strong>CMake 3.5+</strong> &mdash; bundled with Qt or installed separately</li>
+            </ul>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <h3>Clone</h3>
+              <pre><code>git clone https://github.com/ConquerD/ConquerD.git --recurse-submodules
+cd ConquerD</code></pre>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <h3>Fetch Opus DNN weights <span style="font-weight:400; font-size:.8rem; color:var(--muted);">(enables DRED &amp; OSCE)</span></h3>
+              <pre><code>powershell scripts/fetch_opus_weights.ps1   # Windows
+bash scripts/fetch_opus_weights.sh           # Linux / macOS</code></pre>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <h3>Point to Qt and build</h3>
+              <pre><code># Windows (PowerShell) -- point to your Qt install
+$env:QMAKE = "C:\Qt\6.8.3\msvc2022_64\bin\qmake6.exe"
+# Linux / macOS:  export QMAKE=/opt/Qt/6.8.3/gcc_64/bin/qmake6
+
+cd rust
+cargo build -p conquerd-client --features qt-ui --release</code></pre>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <h3>Run</h3>
+              <pre><code>./run_client.sh    # Linux / macOS
+run_client.bat     # Windows</code></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider" style="margin-top:0;" />
+
+<section id="highlights">
+  <div class="container">
+    <p class="section-label">Highlights</p>
+    <h2>You Own the Entire Path</h2>
+    <p class="section-sub">From identity to transport to updates, ConquerD is designed so your communication stays under your control.</p>
+
+    <div class="highlight-grid">
+      <div class="card card-accent">
+        <div class="card-icon">&#x1F399;</div>
+        <h3>Direct Voice First</h3>
+        <p>Calls prefer direct QUIC peer-to-peer. If NAT blocks direct paths, ConquerD falls back to relay automatically.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-icon">&#x1F4AC;</div>
+        <h3>Chat Stored Locally</h3>
+        <p>Chat history is stored in local SQLite on participant devices, with delivery states and signature verification.</p>
+      </div>
+      <div class="card card-green">
+        <div class="card-icon">&#x1F465;</div>
+        <h3>Rooms with SFU Relay</h3>
+        <p>Group rooms support up to 32 participants using supernode SFU relay for room audio plus room chat and files.</p>
+      </div>
+      <div class="card card-purple">
+        <div class="card-icon">&#x1F6E1;</div>
+        <h3>Signed Release Updates</h3>
+        <p>Updates are distributed via GitHub Releases and verified against an Ed25519-signed release manifest before the bundled installer applies them.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F3AE;</div>
+        <h3>Browser Game Relay</h3>
+        <p>Supernodes host browser games over WebTransport. Bundled demos (cursor relay, brick breaker, shared drawing) connect via <code>game.relay.v1</code> directly inside the native client&rsquo;s Nodes tab.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="full-features">
+  <div class="container">
+    <p class="section-label">Reference</p>
+    <h2>Full Feature Surface</h2>
+    <p class="section-sub">High-level capabilities preserved from the original multi-page docs, now in one place.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">&#x1F4AC;</div>
+        <h3>Communication</h3>
+        <ul class="feat-list">
+          <li>Chat-first workflow with typing indicators and delivery states</li>
+          <li>Push-to-talk and voice activation</li>
+          <li>Incoming call overlay with answer, decline, and block</li>
+          <li>Group rooms with invite flow and participant state</li>
+        </ul>
+      </div>
+      <div class="card card-green">
+        <div class="card-icon">&#x1F3A7;</div>
+        <h3>Audio and Quality</h3>
+        <ul class="feat-list">
+          <li>Opus 48 kHz pipeline with jitter buffering</li>
+          <li>DRED deep redundancy &mdash; up to 100&nbsp;ms loss recovery without retransmission</li>
+          <li>OSCE neural speech enhancement &mdash; wideband-to-fullband upscaling</li>
+          <li>Built-in noise suppression (spectral-gate FFT) and VAD</li>
+          <li>Per-peer quality badges based on live connection metrics</li>
+          <li>Dynamic input/output device selection</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F310;</div>
+        <h3>Connectivity</h3>
+        <ul class="feat-list">
+          <li>Five-layer connection strategy with automatic fallback</li>
+          <li>STUN discovery and UPnP mapping support</li>
+          <li>UDP hole punch coordination</li>
+          <li>Supernode QUIC relay fallback for strict NAT</li>
+        </ul>
+      </div>
+      <div class="card card-red">
+        <div class="card-icon">&#x1F512;</div>
+        <h3>Security and Identity</h3>
+        <ul class="feat-list">
+          <li>Ed25519 identity keys with derived peer IDs</li>
+          <li>Signed invite links with timestamp and expiry checks</li>
+          <li>Signed signaling with replay protection</li>
+          <li>Local trust graph and revocation propagation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4E6;</div>
+        <h3>Files and Updates</h3>
+        <ul class="feat-list">
+          <li>P2P file transfer over QUIC streams with offer, accept, and progress states</li>
+          <li>GitHub Releases update checking with Ed25519 signed release-manifest verification</li>
+          <li>Per-platform SHA-256 checksums published with every release artifact</li>
+        </ul>
+      </div>
+      <div class="card card-purple">
+        <div class="card-icon">&#x1F5A7;</div>
+        <h3>Supernode and Access</h3>
+        <ul class="feat-list">
+          <li>Open and gated supernode access modes</li>
+          <li>Portal-based access checks before relay use</li>
+          <li>Operator-controlled identity and configuration</li>
+          <li>WebTransport (<code>web.host.h3.v1</code>) for browser game clients</li>
+          <li>In-app portal (<code>web.host.app.v1</code>) over QUIC bidi-streams</li>
+          <li>Opaque game relay (<code>game.relay.v1</code>) with three bundled demos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="modules">
+  <div class="container">
+    <p class="section-label">Capability Framework</p>
+    <h2>Feature Modules</h2>
+    <p class="section-sub">Peers exchange CAPABILITY_ANNOUNCE after handshake. Only the shared intersection is activated and invokable.</p>
+
+    <div class="two-col">
+      <div class="card card-accent">
+        <h3>Negotiation Flow</h3>
+        <ol style="margin:.35rem 0 0 1.2rem; color:var(--muted); font-size:.87rem; line-height:1.75;">
+          <li>Both peers send CAPABILITY_ANNOUNCE descriptor lists</li>
+          <li>Runtime intersects by feature id and major version</li>
+          <li>Invocation uses CAPABILITY_INVOKE per feature id</li>
+          <li>Trust gates enforce auth tier, consent, and quota</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Namespaces and Trust</h3>
+        <ul class="feat-list">
+          <li>First-party modules use core.* and room.* namespaces</li>
+          <li>Third-party modules use x.&lt;vendor&gt;.* versioned IDs</li>
+          <li>Per-feature token bucket quotas apply per peer</li>
+          <li>Trust checks run before module on_invoke handlers</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="table-wrap table-scroll" style="margin-top:1rem;">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability ID</th>
+            <th>Type</th>
+            <th>Tier</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>core.chat.v1</code></td><td>first-party</td><td>trusted</td><td>Direct chat channel, typing indicators, delivery acks</td></tr>
+          <tr><td><code>core.audio.opus</code></td><td>first-party</td><td>trusted</td><td>Direct peer voice over Opus frames</td></tr>
+          <tr><td><code>core.file.v1</code></td><td>first-party</td><td>trusted</td><td>P2P file send and receive flows</td></tr>
+          <tr><td><code>room.audio.sfu</code></td><td>first-party</td><td>room-member</td><td>Room audio relay via supernode SFU</td></tr>
+          <tr><td><code>room.chat.v1</code></td><td>first-party</td><td>room-member</td><td>Room chat broadcast channels</td></tr>
+          <tr><td><code>room.file.v1</code></td><td>first-party</td><td>room-member</td><td>Signed room file broadcast via supernode</td></tr>
+          <tr><td><code>web.host.app.v1</code></td><td>supernode-hosted</td><td>public</td><td>In-app portal over QUIC bidi-streams (<code>conquerd://</code> pages)</td></tr>
+          <tr><td><code>web.host.h3.v1</code></td><td>supernode-hosted</td><td>public</td><td>WebTransport (HTTP/3) listener for browser game clients</td></tr>
+          <tr><td><code>game.relay.v1</code></td><td>supernode-hosted</td><td>room-member</td><td>Opaque datagram fan-out relay for in-session browser games</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="architecture-deep">
+  <div class="container">
+    <p class="section-label">Technical Reference</p>
+    <h2>Architecture and Protocol</h2>
+    <p class="section-sub">ConquerD is written entirely in Rust. Qt&nbsp;6&nbsp;/&nbsp;QML drives the UI via CXX-Qt; all transport, audio, crypto, and application logic are native Rust.</p>
+
+    <p style="color:var(--muted); font-size:.9rem; margin-bottom:1rem;">Two peers talk directly after sharing an invite link. Arrows show active bidirectional channels once the handshake completes.</p>
+
+    <div class="arch-diagram-wrap">
+      <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg"
+           style="width:100%; min-width:780px; max-width:900px; display:block; margin:0 auto; font-family:'Segoe UI',system-ui,sans-serif;"
+           role="img" aria-label="ConquerD system architecture diagram">
+        <defs>
+          <marker id="arr-fwd" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#5b7fff" opacity=".7"/>
+          </marker>
+          <marker id="arr-bwd" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse">
+            <path d="M0,0 L0,6 L8,3 z" fill="#5b7fff" opacity=".7"/>
+          </marker>
+          <marker id="arr-grn-fwd" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#34d399" opacity=".8"/>
+          </marker>
+          <marker id="arr-grn-bwd" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse">
+            <path d="M0,0 L0,6 L8,3 z" fill="#34d399" opacity=".8"/>
+          </marker>
+          <marker id="arr-pur-fwd" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa" opacity=".8"/>
+          </marker>
+          <marker id="arr-pur-bwd" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa" opacity=".8"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="30" width="248" height="544" rx="12" fill="#1a1e2a" stroke="#252a38" stroke-width="1.5"/>
+        <rect x="10" y="30" width="248" height="36" rx="12" fill="#13161e" stroke="#252a38" stroke-width="1.5"/>
+        <rect x="10" y="54" width="248" height="12" fill="#13161e"/>
+        <text x="134" y="54" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700" letter-spacing=".06em">CLIENT A</text>
+
+        <rect x="642" y="30" width="248" height="544" rx="12" fill="#1a1e2a" stroke="#252a38" stroke-width="1.5"/>
+        <rect x="642" y="30" width="248" height="36" rx="12" fill="#13161e" stroke="#252a38" stroke-width="1.5"/>
+        <rect x="642" y="54" width="248" height="12" fill="#13161e"/>
+        <text x="766" y="54" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700" letter-spacing=".06em">CLIENT B</text>
+
+        <rect x="330" y="30" width="240" height="220" rx="12" fill="#1a1e2a" stroke="#a78bfa" stroke-width="1.5" opacity=".9"/>
+        <rect x="330" y="30" width="240" height="36" rx="12" fill="#1e1830" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="330" y="54" width="240" height="12" fill="#1e1830"/>
+        <text x="450" y="54" text-anchor="middle" fill="#a78bfa" font-size="13" font-weight="700" letter-spacing=".06em">SUPERNODE</text>
+
+        <rect x="22" y="78" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="98" fill="#e2e8f0" font-size="11" font-weight="600">UI Layer</text>
+        <text x="44" y="113" fill="#8b95a8" font-size="9.5">Qt 6 / QML, CXX-Qt, DPI-aware</text>
+
+        <rect x="22" y="132" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="152" fill="#e2e8f0" font-size="11" font-weight="600">Application</text>
+        <text x="44" y="167" fill="#8b95a8" font-size="9.5">conquerd-client app core (Rust)</text>
+
+        <rect x="22" y="186" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="206" fill="#e2e8f0" font-size="11" font-weight="600">Chat and Signaling</text>
+        <text x="44" y="221" fill="#8b95a8" font-size="9.5">ChatStore (SQLite), signed msgs, ACKs</text>
+
+        <rect x="22" y="240" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="260" fill="#e2e8f0" font-size="11" font-weight="600">Voice and Audio</text>
+        <text x="44" y="275" fill="#8b95a8" font-size="9.5">Opus 1.6.1+, DRED, OSCE, VAD, PTT</text>
+
+        <rect x="22" y="294" width="224" height="46" rx="8" fill="#0d0f14" stroke="#34d399" stroke-width="1" opacity=".9"/>
+        <text x="44" y="314" fill="#34d399" font-size="11" font-weight="600">Feature Modules</text>
+        <text x="44" y="329" fill="#8b95a8" font-size="9.5">conquerd-features (Rust), registry, quotas</text>
+
+        <rect x="22" y="348" width="224" height="46" rx="8" fill="#0d0f14" stroke="#5b7fff" stroke-width="1" opacity=".9"/>
+        <text x="44" y="368" fill="#5b7fff" font-size="11" font-weight="600">QUIC Transport</text>
+        <text x="44" y="383" fill="#8b95a8" font-size="9.5">quinn (embedded), QuicRelayClient</text>
+
+        <rect x="22" y="402" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="422" fill="#e2e8f0" font-size="11" font-weight="600">Identity and Crypto</text>
+        <text x="44" y="437" fill="#8b95a8" font-size="9.5">ed25519-dalek, x25519-dalek, AES-GCM</text>
+
+        <rect x="22" y="456" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="476" fill="#e2e8f0" font-size="11" font-weight="600">Storage</text>
+        <text x="44" y="491" fill="#8b95a8" font-size="9.5">rusqlite (chat), JSON (peers, rooms)</text>
+
+        <rect x="22" y="510" width="224" height="52" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="44" y="530" fill="#e2e8f0" font-size="11" font-weight="600">Network I/O</text>
+        <text x="44" y="545" fill="#8b95a8" font-size="9.5">WebSocket, UDP/QUIC, STUN, UPnP</text>
+
+        <rect x="654" y="78" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="98" fill="#e2e8f0" font-size="11" font-weight="600">UI Layer</text>
+        <text x="676" y="113" fill="#8b95a8" font-size="9.5">Qt 6 / QML, CXX-Qt, DPI-aware</text>
+
+        <rect x="654" y="132" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="152" fill="#e2e8f0" font-size="11" font-weight="600">Application</text>
+        <text x="676" y="167" fill="#8b95a8" font-size="9.5">conquerd-client app core (Rust)</text>
+
+        <rect x="654" y="186" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="206" fill="#e2e8f0" font-size="11" font-weight="600">Chat and Signaling</text>
+        <text x="676" y="221" fill="#8b95a8" font-size="9.5">ChatStore (SQLite), signed msgs, ACKs</text>
+
+        <rect x="654" y="240" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="260" fill="#e2e8f0" font-size="11" font-weight="600">Voice and Audio</text>
+        <text x="676" y="275" fill="#8b95a8" font-size="9.5">Opus 1.6.1+, DRED, OSCE, VAD, PTT</text>
+
+        <rect x="654" y="294" width="224" height="46" rx="8" fill="#0d0f14" stroke="#34d399" stroke-width="1" opacity=".9"/>
+        <text x="676" y="314" fill="#34d399" font-size="11" font-weight="600">Feature Modules</text>
+        <text x="676" y="329" fill="#8b95a8" font-size="9.5">conquerd-features (Rust), registry, quotas</text>
+
+        <rect x="654" y="348" width="224" height="46" rx="8" fill="#0d0f14" stroke="#5b7fff" stroke-width="1" opacity=".9"/>
+        <text x="676" y="368" fill="#5b7fff" font-size="11" font-weight="600">QUIC Transport</text>
+        <text x="676" y="383" fill="#8b95a8" font-size="9.5">quinn (embedded), QuicRelayClient</text>
+
+        <rect x="654" y="402" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="422" fill="#e2e8f0" font-size="11" font-weight="600">Identity and Crypto</text>
+        <text x="676" y="437" fill="#8b95a8" font-size="9.5">ed25519-dalek, x25519-dalek, AES-GCM</text>
+
+        <rect x="654" y="456" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="476" fill="#e2e8f0" font-size="11" font-weight="600">Storage</text>
+        <text x="676" y="491" fill="#8b95a8" font-size="9.5">rusqlite (chat), JSON (peers, rooms)</text>
+
+        <rect x="654" y="510" width="224" height="52" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="676" y="530" fill="#e2e8f0" font-size="11" font-weight="600">Network I/O</text>
+        <text x="676" y="545" fill="#8b95a8" font-size="9.5">WebSocket, UDP/QUIC, STUN, UPnP</text>
+
+        <rect x="342" y="78" width="216" height="34" rx="6" fill="#0d0f14" stroke="#a78bfa" stroke-width="1" opacity=".7"/>
+        <text x="450" y="100" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">QUIC Relay, SFU (Rust)</text>
+
+        <rect x="342" y="120" width="216" height="34" rx="6" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
+        <text x="450" y="142" text-anchor="middle" fill="#8b95a8" font-size="10">WebSocket Signaling</text>
+
+        <rect x="342" y="162" width="216" height="34" rx="6" fill="#0d0f14" stroke="#fbbf24" stroke-width="1" opacity=".7"/>
+        <text x="450" y="184" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Portal Access Control</text>
+
+        <rect x="342" y="206" width="216" height="34" rx="6" fill="#0d0f14" stroke="#34d399" stroke-width="1" opacity=".7"/>
+        <text x="450" y="228" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">WebTransport (web.host.h3.v1)</text>
+
+        <line x1="246" y1="209" x2="654" y2="209" stroke="#5b7fff" stroke-width="1.5" stroke-dasharray="5,3" opacity=".5"
+              marker-start="url(#arr-bwd)" marker-end="url(#arr-fwd)"/>
+        <rect x="413" y="198" width="74" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="210" text-anchor="middle" fill="#5b7fff" font-size="9" font-weight="600">Chat P2P</text>
+
+        <line x1="246" y1="263" x2="654" y2="263" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" opacity=".6"
+              marker-start="url(#arr-grn-bwd)" marker-end="url(#arr-grn-fwd)"/>
+        <rect x="406" y="252" width="88" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="264" text-anchor="middle" fill="#34d399" font-size="9" font-weight="600">QUIC Voice</text>
+
+        <line x1="246" y1="317" x2="654" y2="317" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,4" opacity=".55"
+              marker-start="url(#arr-grn-bwd)" marker-end="url(#arr-grn-fwd)"/>
+        <rect x="382" y="306" width="136" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="318" text-anchor="middle" fill="#34d399" font-size="9" font-weight="600">Feature Channels</text>
+
+        <line x1="246" y1="371" x2="654" y2="371" stroke="#5b7fff" stroke-width="2" opacity=".55"
+              marker-start="url(#arr-bwd)" marker-end="url(#arr-fwd)"/>
+        <rect x="392" y="360" width="116" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="372" text-anchor="middle" fill="#5b7fff" font-size="9" font-weight="600">QUIC Transport</text>
+
+        <line x1="246" y1="425" x2="654" y2="425" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3" opacity=".5"
+              marker-start="url(#arr-pur-bwd)" marker-end="url(#arr-pur-fwd)"/>
+        <rect x="393" y="414" width="114" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="426" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">E2E Encrypted</text>
+
+        <line x1="246" y1="535" x2="654" y2="535" stroke="#5b7fff" stroke-width="1.5" stroke-dasharray="3,4" opacity=".4"
+              marker-start="url(#arr-bwd)" marker-end="url(#arr-fwd)"/>
+        <rect x="427" y="524" width="46" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="536" text-anchor="middle" fill="#5b7fff" font-size="9" font-weight="600">UDP</text>
+
+        <path d="M 134 78 Q 134 32 330 95" stroke="#8b95a8" stroke-width="1.2" stroke-dasharray="4,3" fill="none" opacity=".55"
+              marker-end="url(#arr-fwd)"/>
+        <text x="222" y="48" text-anchor="middle" fill="#8b95a8" font-size="8.5">WS Signal</text>
+
+        <path d="M 134 348 Q 260 220 342 154" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="5,3" fill="none" opacity=".55"
+              marker-end="url(#arr-pur-fwd)"/>
+
+        <path d="M 766 78 Q 766 32 570 95" stroke="#8b95a8" stroke-width="1.2" stroke-dasharray="4,3" fill="none" opacity=".55"
+              marker-end="url(#arr-fwd)"/>
+        <text x="678" y="48" text-anchor="middle" fill="#8b95a8" font-size="8.5">WS Signal</text>
+
+        <path d="M 766 348 Q 640 220 558 154" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="5,3" fill="none" opacity=".55"
+              marker-end="url(#arr-pur-fwd)"/>
+
+        <rect x="398" y="232" width="104" height="17" rx="4" fill="#0d0f14"/>
+        <text x="450" y="244" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">QUIC Relay (fallback)</text>
+
+        <g transform="translate(298, 448)">
+          <rect x="0" y="0" width="304" height="135" rx="8" fill="#13161e" stroke="#252a38" stroke-width="1"/>
+          <text x="152" y="18" text-anchor="middle" fill="#8b95a8" font-size="9" font-weight="700" letter-spacing=".07em">LEGEND</text>
+          <line x1="14" y1="34" x2="46" y2="34" stroke="#5b7fff" stroke-width="2" marker-end="url(#arr-fwd)"/>
+          <text x="54" y="38" fill="#8b95a8" font-size="9">Direct peer-to-peer (QUIC / UDP)</text>
+          <line x1="14" y1="54" x2="46" y2="54" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-grn-fwd)"/>
+          <text x="54" y="58" fill="#8b95a8" font-size="9">Voice channel (Opus over QUIC)</text>
+          <line x1="14" y1="74" x2="46" y2="74" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arr-grn-fwd)"/>
+          <text x="54" y="78" fill="#8b95a8" font-size="9">Feature channels (capability negotiated)</text>
+          <line x1="14" y1="94" x2="46" y2="94" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-pur-fwd)"/>
+          <text x="54" y="98" fill="#8b95a8" font-size="9">QUIC Relay via supernode (fallback)</text>
+          <line x1="14" y1="114" x2="46" y2="114" stroke="#8b95a8" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-fwd)"/>
+          <text x="54" y="118" fill="#8b95a8" font-size="9">WebSocket signaling</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="arch-infra">
+      <span class="arch-chip accent">conquerd:// invite URL</span>
+      <span class="arch-chip">STUN public IP</span>
+      <span class="arch-chip">UPnP auto port-map</span>
+      <span class="arch-chip">UDP hole punch</span>
+      <span class="arch-chip purple">QUIC relay (supernode)</span>
+      <span class="arch-chip">Portal access control</span>
+      <span class="arch-chip green">SFU group call room</span>
+      <span class="arch-chip">Browser game relay</span>
+      <span class="arch-chip green">WebTransport (H/3)</span>
+    </div>
+
+    <div class="table-wrap table-scroll">
+      <table>
+        <thead><tr><th>Layer</th><th>Language</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td>UI and app logic</td><td>Rust &middot; Qt 6 / QML (CXX-Qt)</td><td>Views, state, chat/call control, onboarding, settings</td></tr>
+          <tr><td>Audio pipeline</td><td>Rust (CPAL + conquerd-opus)</td><td>Capture, Opus 1.6.1+ encode/decode (DRED + OSCE), VAD, jitter buffer, playback</td></tr>
+          <tr><td>Crypto primitives</td><td>Rust (ed25519-dalek, aes-gcm, argon2)</td><td>Ed25519, X25519, HKDF-SHA256, AES-256-GCM, replay window</td></tr>
+          <tr><td>QUIC transport</td><td>Rust (quinn, embedded)</td><td>ConnectionManager P2P, QuicRelayClient relay, hole punch</td></tr>
+          <tr><td>Feature registry</td><td>Rust (conquerd-features rlib)</td><td>Module registration, descriptor negotiation, quota enforcement</td></tr>
+          <tr><td>Supernode</td><td>Rust (conquerd-supernode)</td><td>Relay/SFU, WebTransport portal (<code>web.host.h3.v1</code>), in-app QUIC portal (<code>web.host.app.v1</code>), game relay (<code>game.relay.v1</code>), room state, stats endpoints</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:1.25rem 0 .65rem; font-size:1rem;">Protocol Message Categories</h3>
+    <div class="table-wrap table-scroll">
+      <table>
+        <thead><tr><th>Category</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Invite</td><td>Cryptographic invite handshake (init/accept/reject)</td></tr>
+          <tr><td>Capability</td><td>Feature announcement and invocation</td></tr>
+          <tr><td>Chat</td><td>Text messages and typing states</td></tr>
+          <tr><td>Call</td><td>Direct voice call request, accept, reject, end</td></tr>
+          <tr><td>Relay</td><td>Supernode access negotiation and relay control</td></tr>
+          <tr><td>Room / SFU</td><td>Room membership, room audio, room chat, room files</td></tr>
+          <tr><td>File Transfer</td><td>Chunked file send/receive lifecycle</td></tr>
+          <tr><td>Hole Punch</td><td>Supernode-coordinated UDP punch timing</td></tr>
+          <tr><td>Endpoint / Handle</td><td>Endpoint changes and display name propagation</td></tr>
+          <tr><td>Peer Updates</td><td>Version announce and update offer/accept/reject</td></tr>
+          <tr><td>Utility</td><td>Ping/pong, presence, speaking state, errors</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="code-signing-policy">
+  <div class="container" style="max-width:760px;">
+    <p class="section-label">Security and Compliance</p>
+    <h2>Code Signing Policy</h2>
+    <p class="section-sub">Binary code signing is being set up for release builds. During the alpha, builds are distributed unsigned with an Ed25519-signed release manifest as the root of trust.</p>
+
+    <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
+      ConquerD is currently in its <strong>1.0.0-alpha</strong> testing phase. Alpha builds on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener noreferrer">nightly release</a> are <strong>not yet code-signed</strong>, so Windows SmartScreen or macOS Gatekeeper may warn before launch. Every release is published alongside a per-platform SHA-256 checksum and an Ed25519-signed release manifest that the bundled installer verifies before applying any update.
+    </p>
+
+    <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
+      After alpha testing stabilises, release builds will be code-signed: Windows via <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a> (certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>) and macOS via the Apple Developer Program. The Ed25519 release-manifest key remains the canonical root of trust across all platforms.
+    </p>
+
+    <h3 style="font-size:1rem; margin:1.5rem 0 .6rem;">Team Roles</h3>
+    <div class="table-wrap table-scroll">
+      <table>
+        <thead><tr><th>Role</th><th>Members</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Authors</strong> (trusted committers)</td><td><a href="https://github.com/orgs/ConquerD/teams/authors" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
+          <tr><td><strong>Reviewers</strong> (PR reviewers)</td><td><a href="https://github.com/orgs/ConquerD/teams/reviewers" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
+          <tr><td><strong>Approvers</strong> (release signing)</td><td><a href="https://github.com/orgs/ConquerD/teams/approvers" target="_blank" rel="noopener noreferrer">Owners</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:1.2rem; text-align:center;">
+      <a href="https://github.com/ConquerD/ConquerD#code-signing-policy" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="font-size:.85rem; padding:.45rem .9rem;">Full Policy on GitHub &rarr;</a>
+    </p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section class="cta-section">
+  <div class="container">
+    <h2></h2>
+    <p class="section-sub"></p>
+    <div class="cta-actions">
+      <a href="https://github.com/ConquerD/ConquerD" class="btn btn-primary">View Repository</a>
+      <a href="https://github.com/ConquerD/ConquerD/releases" target="_blank" rel="noopener" class="btn btn-ghost">Releases &rarr;</a>
+      <a href="https://github.com/ConquerD/ConquerD/issues" class="btn btn-ghost">Report an Issue</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>&copy; 2026 ConquerD &nbsp;&middot;&nbsp; MIT License &nbsp;&middot;&nbsp; <a href="https://conquerd.com">conquerd.com</a></span>
+  <div class="footer-links">
+    <a href="#full-features">Features</a>
+    <a href="#modules">Modules</a>
+    <a href="#architecture-deep">Architecture</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="https://github.com/ConquerD/ConquerD/releases" target="_blank" rel="noopener">Releases</a>
+    <a href="https://github.com/ConquerD/ConquerD">GitHub</a>
+  </div>
+</footer>
+
 </body>
 </html>
