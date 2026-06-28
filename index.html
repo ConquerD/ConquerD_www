@@ -11,6 +11,166 @@
   <link rel="canonical" href="https://conquerd.com/" />
   <link rel="icon" href="conquerd.ico" />
   <link rel="stylesheet" href="styles.css" />
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+
+    function attachMermaidPanZoom() {
+      var container = document.getElementById('arch-mermaid-container');
+      if (!container) return;
+
+      function setup(svg) {
+        if (!svg || svg.dataset.panZoomReady === 'true') return Boolean(svg);
+        svg.dataset.panZoomReady = 'true';
+
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.style.display = 'block';
+        svg.style.maxWidth = 'none';
+        svg.style.transformOrigin = '0 0';
+
+        var mermaidElement = svg.closest('.mermaid');
+        if (mermaidElement) {
+          mermaidElement.style.margin = '0';
+          mermaidElement.style.overflow = 'visible';
+        }
+
+        var minZoom = 0.1;
+        var maxZoom = 5;
+        var scale = 1;
+        var offsetX = 0;
+        var offsetY = 0;
+        var isPanning = false;
+        var panStartX = 0;
+        var panStartY = 0;
+        var startOffsetX = 0;
+        var startOffsetY = 0;
+
+        function clamp(value, min, max) {
+          return Math.min(max, Math.max(min, value));
+        }
+
+        function applyTransform() {
+          svg.style.transform = 'translate(' + offsetX + 'px, ' + offsetY + 'px) scale(' + scale + ')';
+        }
+
+        function zoomAt(clientX, clientY, factor) {
+          var rect = container.getBoundingClientRect();
+          var nextScale = clamp(scale * factor, minZoom, maxZoom);
+          var anchorX = clientX - rect.left;
+          var anchorY = clientY - rect.top;
+          var worldX = (anchorX - offsetX) / scale;
+          var worldY = (anchorY - offsetY) / scale;
+
+          scale = nextScale;
+          offsetX = anchorX - worldX * scale;
+          offsetY = anchorY - worldY * scale;
+          applyTransform();
+        }
+
+        function fitView() {
+          var vb = svg.viewBox.baseVal;
+          if (!vb || !vb.width) return;
+          svg.style.width = vb.width + 'px';
+          svg.style.height = vb.height + 'px';
+          scale = Math.min((container.clientWidth  - 24) / vb.width,
+                           (container.clientHeight - 24) / vb.height);
+          scale = clamp(scale, minZoom, maxZoom);
+          offsetX = (container.clientWidth  - vb.width  * scale) / 2;
+          offsetY = (container.clientHeight - vb.height * scale) / 2;
+          applyTransform();
+        }
+        fitView();
+
+        container.addEventListener('pointerdown', function (event) {
+          var target = event.target instanceof Element ? event.target : null;
+          if (event.button !== 0 || (target && target.closest('.mermaid-zoom-controls'))) return;
+          isPanning = true;
+          panStartX = event.clientX;
+          panStartY = event.clientY;
+          startOffsetX = offsetX;
+          startOffsetY = offsetY;
+          container.classList.add('is-panning');
+          container.setPointerCapture(event.pointerId);
+          event.preventDefault();
+        });
+
+        container.addEventListener('pointermove', function (event) {
+          if (!isPanning) return;
+          offsetX = startOffsetX + event.clientX - panStartX;
+          offsetY = startOffsetY + event.clientY - panStartY;
+          applyTransform();
+        });
+
+        function endPan(event) {
+          if (!isPanning) return;
+          isPanning = false;
+          container.classList.remove('is-panning');
+          if (container.hasPointerCapture(event.pointerId)) {
+            container.releasePointerCapture(event.pointerId);
+          }
+        }
+
+        container.addEventListener('pointerup', endPan);
+        container.addEventListener('pointercancel', endPan);
+
+        container.addEventListener('wheel', function (event) {
+          event.preventDefault();
+          zoomAt(event.clientX, event.clientY, event.deltaY < 0 ? 1.15 : 1 / 1.15);
+        }, { passive: false });
+
+        window.addEventListener('resize', fitView);
+
+        var zoomIn = document.getElementById('arch-zoom-in');
+        var zoomOut = document.getElementById('arch-zoom-out');
+        var zoomReset = document.getElementById('arch-zoom-reset');
+
+        if (zoomIn) {
+          zoomIn.addEventListener('click', function () {
+            var rect = container.getBoundingClientRect();
+            zoomAt(rect.left + container.clientWidth / 2, rect.top + container.clientHeight / 2, 1.5);
+          });
+        }
+        if (zoomOut) {
+          zoomOut.addEventListener('click', function () {
+            var rect = container.getBoundingClientRect();
+            zoomAt(rect.left + container.clientWidth / 2, rect.top + container.clientHeight / 2, 1 / 1.5);
+          });
+        }
+        if (zoomReset) {
+          zoomReset.addEventListener('click', fitView);
+        }
+
+        return true;
+      }
+
+      if (setup(container.querySelector('svg'))) return;
+
+      var observer = new MutationObserver(function () {
+        if (setup(container.querySelector('svg'))) {
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(container, { childList: true, subtree: true });
+    }
+
+    async function bootMermaidChart() {
+      try {
+        await mermaid.run({ querySelector: '#arch-mermaid-container .mermaid' });
+      } catch (error) {
+        console.error('Unable to render Mermaid chart', error);
+      }
+      attachMermaidPanZoom();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootMermaidChart);
+    } else {
+      bootMermaidChart();
+    }
+  </script>
   <style>
     .hero-logo { margin-bottom: 1.5rem; }
     .wordmark-svg { width: min(620px, 94vw); height: auto; }
@@ -96,6 +256,57 @@
     .platform-card p { font-size: .83rem; color: var(--muted); margin: .3rem 0 .65rem; line-height: 1.5; flex: 1; }
     @media (max-width: 860px) { .platform-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 700px) { .platform-grid { grid-template-columns: 1fr; } }
+    .mermaid-zoom-container {
+      position: relative;
+      height: 620px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      cursor: grab;
+      overscroll-behavior: contain;
+      touch-action: none;
+    }
+    .mermaid-zoom-container:active { cursor: grabbing; }
+    .mermaid-zoom-container.is-panning { cursor: grabbing; }
+    .mermaid-zoom-container svg { user-select: none; }
+    .mermaid-zoom-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: .72rem;
+      color: var(--muted);
+      opacity: .6;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .mermaid-zoom-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+    .mermaid-zoom-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: .95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, color .15s;
+      line-height: 1;
+      padding: 0;
+    }
+    .mermaid-zoom-btn:hover { border-color: var(--accent); color: var(--accent); }
     /* Dev steps: full-width single column so code blocks have maximum horizontal space */
     .panel-dev .steps { grid-template-columns: 1fr; gap: .85rem; }
     .panel-dev .step { display: grid; grid-template-columns: auto 1fr; column-gap: 1.1rem; align-items: start; }
@@ -665,6 +876,236 @@ run_client.bat     # Windows</code></pre>
       <span class="arch-chip green">SFU group call room</span>
       <span class="arch-chip">Browser game relay</span>
       <span class="arch-chip green">WebTransport (H/3)</span>
+    </div>
+
+    <h3 style="margin:1.5rem 0 .5rem; font-size:1rem;">Full Component Map</h3>
+    <p style="color:var(--muted); font-size:.85rem; margin-bottom:.85rem;">All crates, modules, and external dependencies — arrows show data-flow and dependency direction.</p>
+    <div class="mermaid-zoom-container" id="arch-mermaid-container">
+      <div class="mermaid-zoom-controls">
+        <button class="mermaid-zoom-btn" id="arch-zoom-in"    title="Zoom in">+</button>
+        <button class="mermaid-zoom-btn" id="arch-zoom-out"   title="Zoom out">&#x2212;</button>
+        <button class="mermaid-zoom-btn" id="arch-zoom-reset" title="Fit to view" style="font-size:.7rem;">&#x2B1C;</button>
+      </div>
+      <span class="mermaid-zoom-hint">Scroll to zoom &nbsp;&middot;&nbsp; Drag to pan</span>
+      <pre class="mermaid">
+graph TD
+
+    subgraph CLIENT["conquerd-client  (Desktop App)"]
+        direction TB
+
+        subgraph UI["QML UI Layer"]
+            MW["MainWindow"]
+            PL["PeerList / SidebarItem"]
+            CP["ChatPanel"]
+            CAP["CallPanel"]
+            RP["RoomPanel / VoiceRail"]
+            SP["SettingsPage"]
+            BP["BrowserPanel"]
+            STATS["StatsPanel / ConnectionStatsChip"]
+        end
+
+        subgraph BRIDGE["cxx-qt Bridge  src/ui/"]
+            AB["AppBridge"]
+            PM["PeerListModel"]
+            CM["ChatModel"]
+            RM["RoomModel"]
+            CALLM["CallModel"]
+            FM["FileTransferModel"]
+        end
+
+        subgraph LOGIC["Core Logic"]
+            CONN["ConnectionManager"]
+            AUDIO["CallController"]
+            SFU_C["SFUClient"]
+            FT["FileTransfer"]
+            FTR["FeatureTrustGate"]
+            UPDATE["GithubUpdater"]
+            WAC["WebAppClient"]
+            OLLAMA["OllamaModule"]
+        end
+
+        subgraph TRANSPORT["Transport Layer"]
+            QUIC["QUIC - quinn"]
+            WS["WebSocket - tungstenite"]
+            RELAY_C["QuicRelayClient"]
+            NAT["relay.rs + UPnP"]
+        end
+
+        subgraph ID_LAYER["Identity & Crypto"]
+            ID_C["identity.rs - Ed25519 keypair"]
+            CRYPTO_C["crypto.rs - HKDF / AES-GCM"]
+            HS_C["handshake.rs"]
+            TLS_C["quic_tls.rs - self-signed cert"]
+        end
+
+        subgraph STORE["Persistence"]
+            PS_C["peer_store - trust graph"]
+            CS["chat_store - SQLite"]
+            RS["room_store - SQLite"]
+            AV["avatar_config.json"]
+            SET["settings.json"]
+        end
+
+        subgraph AUDIO_PIPE["Audio Pipeline"]
+            CPAL_IO["CPAL - audio I/O"]
+            AEC_R["aec.rs - NLMS echo cancel"]
+            JB["Jitter Buffer"]
+        end
+    end
+
+    subgraph SUPERNODE["conquerd-supernode  (Server)"]
+        direction TB
+        SIG["signaling.rs - WebSocket handler"]
+        HS_S["handshake.rs"]
+        REL_S["relay.rs - QUIC forwarder"]
+        SFU_S["sfu.rs - SFU room mux"]
+        TICKET["ticket.rs - relay tickets"]
+        WT["webtransport.rs - H3 listener"]
+        WAM["web_app_module.rs"]
+        ACCESS["access.rs - attestation policy"]
+        PS_S["peer_store - endpoint mailbox"]
+        CFG["config.rs - TOML"]
+    end
+
+    subgraph FEATURES["conquerd-features  (Shared Library)"]
+        REG["FeatureRegistry"]
+        DESC["CapabilityDescriptor"]
+        QUOTA["QuotaSystem - token buckets"]
+        CF["ChannelFraming - 1-byte tag"]
+        WK["WellKnown caps&lt;br/&gt;core.audio.opus&lt;br/&gt;core.chat.v1&lt;br/&gt;core.file.v1&lt;br/&gt;room.audio.sfu&lt;br/&gt;web.host.*"]
+    end
+
+    subgraph OPUS_LIB["conquerd-opus  (Audio Codec)"]
+        ENC["OpusEncoder - 48kHz / 128kbps"]
+        DEC["OpusDecoder - FEC / PLC"]
+        LIBOPUS["libopus C - DRED / OSCE"]
+    end
+
+    subgraph INSTALLER["conquerd-installer  (Updater GUI)"]
+        IGUI["egui window"]
+        GH_API["github.rs - release polling"]
+        EXTRACT["extract.rs - 7z"]
+        SIGN["sign-release-manifest"]
+    end
+
+    subgraph BROWSER["Browser Clients"]
+        SDK["web-sdk / conquerd.mjs"]
+        GAMES["games/&lt;br/&gt;brick-breaker&lt;br/&gt;shared-drawing&lt;br/&gt;example"]
+    end
+
+    subgraph EXTERNAL["External"]
+        GH_REL["GitHub Releases API"]
+        OS_KR["OS Keyring"]
+        STUN_S["STUN Servers"]
+        OLLAMA_E["Ollama - local AI"]
+    end
+
+    MW --> AB
+    STATS --> AB
+    PL --> PM
+    PL --> AB
+    CP --> CM
+    CP --> AB
+    CAP --> CALLM
+    CAP --> AB
+    RP --> RM
+    RP --> AB
+    SP --> AB
+    BP --> WAC
+    FM --> AB
+
+    AB --> CONN
+    AB --> FTR
+    AB --> UPDATE
+    AB --> OLLAMA
+    PM --> PS_C
+    CM --> CS
+    RM --> RS
+    RM --> SFU_C
+    CALLM --> AUDIO
+
+    CONN --> QUIC
+    CONN --> WS
+    CONN --> HS_C
+    QUIC --> RELAY_C
+    RELAY_C --> NAT
+    SFU_C --> QUIC
+    FT --> QUIC
+    AUDIO --> QUIC
+
+    HS_C --> ID_C
+    HS_C --> CRYPTO_C
+    QUIC --> TLS_C
+    ID_C --> OS_KR
+
+    AUDIO --> CPAL_IO
+    AUDIO --> AEC_R
+    AUDIO --> JB
+    AUDIO --> ENC
+    AUDIO --> DEC
+    ENC --> LIBOPUS
+    DEC --> LIBOPUS
+
+    FTR --> REG
+    SFU_C --> REG
+    FT --> REG
+    REG --> DESC
+    REG --> QUOTA
+    REG --> CF
+    REG --> WK
+
+    WS -->|"WebSocket signaling"| SIG
+    QUIC -->|"QUIC datagrams relay"| REL_S
+    QUIC -->|"QUIC datagrams SFU audio"| SFU_S
+    WAC -->|"HTTP / conquerd URL"| WAM
+
+    SIG --> HS_S
+    SIG --> PS_S
+    SIG --> ACCESS
+    HS_S --> ACCESS
+    REL_S --> TICKET
+    REL_S --> ACCESS
+    SFU_S --> ACCESS
+    SFU_S --> WK
+    WT --> WAM
+    WAM --> WK
+    CFG --> SIG
+    CFG --> REL_S
+    CFG --> SFU_S
+
+    SFU_S --> REG
+    WAM --> REG
+
+    GAMES --> SDK
+    SDK -->|"WebTransport H3"| WT
+    BP -.->|"renders ConquerD pages"| GAMES
+
+    IGUI --> GH_API
+    IGUI --> EXTRACT
+    GH_API --> GH_REL
+    UPDATE --> GH_REL
+    SIGN -.->|"signs release manifest"| GH_REL
+
+    NAT --> STUN_S
+    OLLAMA --> OLLAMA_E
+
+    classDef box fill:#1e1e2e,stroke:#585b70,color:#cdd6f4
+    classDef ext fill:#11111b,stroke:#45475a,color:#a6adc8,stroke-dasharray:4 4
+    classDef shared fill:#1e1e2e,stroke:#89b4fa,color:#89b4fa
+    class MW,PL,CP,CAP,RP,SP,BP,STATS box
+    class AB,PM,CM,RM,CALLM,FM box
+    class CONN,AUDIO,SFU_C,FT,FTR,UPDATE,WAC,OLLAMA box
+    class QUIC,WS,RELAY_C,NAT box
+    class ID_C,CRYPTO_C,HS_C,TLS_C box
+    class PS_C,CS,RS,AV,SET box
+    class CPAL_IO,AEC_R,JB box
+    class SIG,HS_S,REL_S,SFU_S,TICKET,WT,WAM,ACCESS,PS_S,CFG box
+    class REG,DESC,QUOTA,CF,WK shared
+    class ENC,DEC,LIBOPUS shared
+    class IGUI,GH_API,EXTRACT,SIGN box
+    class SDK,GAMES box
+    class GH_REL,OS_KR,STUN_S,OLLAMA_E ext
+      </pre>
     </div>
 
     <div class="table-wrap table-scroll">
