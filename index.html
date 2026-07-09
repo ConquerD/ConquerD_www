@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ConquerD &ndash; Private Voice, Chat, Games, and Architecture</title>
-  <meta name="description" content="ConquerD is invite-only peer-to-peer voice, chat, and browser games with optional supernode relay, capability modules, WebTransport game relay, and full protocol reference." />
+  <title>ConquerD &ndash; Private Voice, Chat, Rooms, Games, and Architecture</title>
+  <meta name="description" content="ConquerD is invite-only peer-to-peer voice, chat, rooms, files, and browser games with optional supernode relay, capability modules, WebTransport game relay, and full protocol reference." />
   <meta property="og:title" content="ConquerD &ndash; Private Voice, Chat &amp; Games" />
-  <meta property="og:description" content="Invite-only P2P voice and chat with game relay, module negotiation, architecture details, quick start, and code signing policy." />
+  <meta property="og:description" content="Invite-only P2P voice, chat, rooms, files, and game relay with module negotiation, architecture details, quick start, and code signing policy." />
   <meta property="og:url" content="https://conquerd.com" />
   <link rel="canonical" href="https://conquerd.com/" />
   <link rel="icon" href="conquerd.ico" />
@@ -336,8 +336,8 @@
     <img class="wordmark-svg" src="logo-full.svg" alt="ConquerD://" />
   </div>
 
-  <div class="badge"><span class="dot"></span>v1.0.0-alpha &nbsp;&middot;&nbsp; 488 tests &nbsp;&middot;&nbsp; MIT</div>
-  <p class="tagline">Private voice and chat for your group.<br />No accounts. No subscriptions. No one owns your server.</p>
+  <div class="badge"><span class="dot"></span>v1.0.0 &nbsp;&middot;&nbsp; 620 unit tests &nbsp;&middot;&nbsp; MIT</div>
+  <p class="tagline">Private voice, chat, rooms, files, and games for your group.<br />No accounts. No subscriptions. No one owns your server.</p>
 
   <div class="hero-actions">
     <a href="#quickstart" class="btn btn-primary">Download &amp; Install</a>
@@ -368,7 +368,7 @@
       <div class="pillar">
         <div class="icon">&#x1F512;</div>
         <h3>End-to-End Encrypted</h3>
-        <p>Handshake uses ephemeral X25519 + HKDF + AES-GCM. Signaling is signed, transcript-bound, and replay-resistant.</p>
+        <p>Handshake uses ephemeral X25519 + HKDF + AES-GCM. Signaling is signed, transcript-bound, freshness-checked, and replay-guarded.</p>
       </div>
       <div class="pillar">
         <div class="icon">&#x1F6AB;</div>
@@ -388,10 +388,10 @@
   <div class="container">
     <p class="section-label">Getting Started</p>
     <h2>Quick Start</h2>
-    <p class="section-sub">Choose your path &mdash; grab an alpha test build or build from source.</p>
+    <p class="section-sub">Choose your path &mdash; grab a nightly test build or build from source.</p>
 
     <div class="card card-accent" style="margin-bottom:1.4rem; padding:.85rem 1.1rem;">
-      <p style="margin:0; font-size:.85rem; color:var(--muted); line-height:1.6;"><strong style="color:var(--text);">Alpha testing.</strong> ConquerD is in its first public alpha. Test builds are published on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener">nightly release</a> and are <strong>not yet code-signed</strong> &mdash; your OS may show a SmartScreen or Gatekeeper warning. Code signing for release builds is planned once alpha testing stabilises.</p>
+      <p style="margin:0; font-size:.85rem; color:var(--muted); line-height:1.6;"><strong style="color:var(--text);">Nightly test builds.</strong> Current builds are published on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener">nightly release</a>. Some platform binaries may still be unsigned while signing approvals roll out, but release archives are protected by SHA-256 checksums and the Ed25519 release manifest used by the installer.</p>
     </div>
 
     <div class="install-tabs">
@@ -409,19 +409,19 @@
           <div class="platform-grid">
             <div class="platform-card">
               <div class="platform-tag">Windows</div>
-              <h4>Installer (alpha)</h4>
-              <p>Run the installer and launch from the Start Menu. Unsigned during alpha &mdash; click <em>More info &rarr; Run anyway</em> if SmartScreen prompts.</p>
+              <h4>Installer</h4>
+              <p>Run the installer and launch from the Start Menu. If Windows warns about an unsigned nightly, click <em>More info &rarr; Run anyway</em> after verifying the release checksum.</p>
               <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
             </div>
             <div class="platform-card">
               <div class="platform-tag">macOS</div>
-              <h4>App bundle (alpha)</h4>
-              <p>Open the DMG and drag to Applications. Unsigned during alpha &mdash; right-click the app and choose <em>Open</em> to bypass Gatekeeper.</p>
+              <h4>App bundle</h4>
+              <p>Open the DMG and drag to Applications. If Gatekeeper warns on an unsigned nightly, right-click the app and choose <em>Open</em> after verifying the release checksum.</p>
               <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
             </div>
             <div class="platform-card">
               <div class="platform-tag">Linux</div>
-              <h4>AppImage (alpha)</h4>
+              <h4>AppImage</h4>
               <p>Mark executable and run. Verify your download against the published SHA-256 checksum.</p>
               <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:.81rem; padding:.38rem .8rem;">Nightly Builds &rarr;</a>
             </div>
@@ -481,14 +481,15 @@ bash scripts/fetch_opus_weights.sh           # Linux / macOS</code></pre>
 $env:QMAKE = "C:\Qt\6.8.3\msvc2022_64\bin\qmake6.exe"
 # Linux / macOS:  export QMAKE=/opt/Qt/6.8.3/gcc_64/bin/qmake6
 
-cd rust
-cargo build -p conquerd-client --features qt-ui --release</code></pre>
+cd rust\conquerd-client
+cargo build --features qt-ui --release</code></pre>
             </div>
             <div class="step">
               <div class="step-num">4</div>
               <h3>Run</h3>
-              <pre><code>./run_client.sh    # Linux / macOS
-run_client.bat     # Windows</code></pre>
+              <pre><code># From the repository root
+.\run_client.bat   # Windows
+./run_client.sh    # Linux / macOS</code></pre>
             </div>
           </div>
         </div>
@@ -516,12 +517,12 @@ run_client.bat     # Windows</code></pre>
       <div class="card card-accent">
         <div class="card-icon">&#x1F4AC;</div>
         <h3>Chat Stored Locally</h3>
-        <p>Chat history is stored in local SQLite on participant devices, with delivery states and signature verification.</p>
+        <p>Chat history is stored locally on participant devices, with encrypted message bodies, delivery states, and signature verification.</p>
       </div>
       <div class="card card-green">
         <div class="card-icon">&#x1F465;</div>
         <h3>Rooms with SFU Relay</h3>
-        <p>Group rooms support up to 32 participants using supernode SFU relay for room audio plus room chat and files.</p>
+        <p>Group rooms support up to 32 participants and nest into sub-rooms. Definitions stay client-owned in encrypted <code>my_rooms.dat</code>; supernodes host only ephemeral SFU relay state, admitting members via signed Merkle inclusion proofs so any cluster node can verify without seeing the original invite.</p>
       </div>
       <div class="card card-purple">
         <div class="card-icon">&#x1F6E1;</div>
@@ -531,7 +532,7 @@ run_client.bat     # Windows</code></pre>
       <div class="card">
         <div class="card-icon">&#x1F3AE;</div>
         <h3>Browser Game Relay</h3>
-        <p>Supernodes host browser games over WebTransport. Bundled demos (cursor relay, brick breaker, shared drawing) connect via <code>game.relay.v1</code> directly inside the native client&rsquo;s Nodes tab.</p>
+        <p>Supernodes host browser games over WebTransport. Bundled demos (cursor relay, brick breaker, shared drawing) connect via <code>game.relay.v1</code> from the native client&rsquo;s room portal.</p>
       </div>
     </div>
   </div>
@@ -553,7 +554,7 @@ run_client.bat     # Windows</code></pre>
           <li>Chat-first workflow with typing indicators and delivery states</li>
           <li>Push-to-talk and voice activation</li>
           <li>Incoming call overlay with answer, decline, and block</li>
-          <li>Group rooms with invite flow and participant state</li>
+          <li>Group rooms with owner- or member-mintable invites, sub-room nesting, participant state, room chat, and room files</li>
         </ul>
       </div>
       <div class="card card-green">
@@ -576,6 +577,7 @@ run_client.bat     # Windows</code></pre>
           <li>STUN discovery and UPnP mapping support</li>
           <li>UDP hole punch coordination</li>
           <li>Supernode QUIC relay fallback for strict NAT</li>
+          <li>WebSocket signaling fallback when a peer QUIC signaling stream is not available</li>
         </ul>
       </div>
       <div class="card card-red">
@@ -584,8 +586,9 @@ run_client.bat     # Windows</code></pre>
         <ul class="feat-list">
           <li>Ed25519 identity keys with derived peer IDs</li>
           <li>Signed invite links with timestamp and expiry checks</li>
-          <li>Signed signaling with replay protection</li>
+          <li>Signed signaling with 5-minute freshness checks and per-sender replay guards</li>
           <li>Local trust graph and revocation propagation</li>
+          <li>Capability auth tiers, consent prompts, and per-feature quota gates</li>
         </ul>
       </div>
       <div class="card">
@@ -603,7 +606,10 @@ run_client.bat     # Windows</code></pre>
         <ul class="feat-list">
           <li>Open and gated supernode access modes</li>
           <li>Portal-based access checks before relay use</li>
-          <li>Operator-controlled identity and configuration</li>
+          <li>Operator-controlled identity, environment configuration, and <code>supernode.toml</code> feature manifests</li>
+          <li>Ephemeral SFU room hosting; room definitions and chat history remain on clients</li>
+          <li>Multi-node supernode clusters gossip relay, SFU, and room state for transparent peer failover</li>
+          <li>Signed Space Merkle room tree lets any cluster node admit a proven member without ever seeing the original invite</li>
           <li>WebTransport (<code>web.host.h3.v1</code>) for browser game clients</li>
           <li>In-app portal (<code>web.host.app.v1</code>) over QUIC bidi-streams</li>
           <li>Opaque game relay (<code>game.relay.v1</code>) with three bundled demos</li>
@@ -619,7 +625,7 @@ run_client.bat     # Windows</code></pre>
   <div class="container">
     <p class="section-label">Capability Framework</p>
     <h2>Feature Modules</h2>
-    <p class="section-sub">Peers exchange CAPABILITY_ANNOUNCE after handshake. Only the shared intersection is activated and invokable.</p>
+    <p class="section-sub">Peers exchange CAPABILITY_ANNOUNCE after handshake. The current catalogue has 19 well-known transport, core, room, web, and game descriptors; only the shared intersection is activated and invokable.</p>
 
     <div class="two-col">
       <div class="card card-accent">
@@ -628,16 +634,16 @@ run_client.bat     # Windows</code></pre>
           <li>Both peers send CAPABILITY_ANNOUNCE descriptor lists</li>
           <li>Runtime intersects by feature id and major version</li>
           <li>Invocation uses CAPABILITY_INVOKE per feature id</li>
-          <li>Trust gates enforce auth tier, consent, and quota</li>
+          <li>Trust gates enforce intersection, auth tier, consent, and quota</li>
         </ol>
       </div>
       <div class="card">
         <h3>Namespaces and Trust</h3>
         <ul class="feat-list">
-          <li>First-party modules use core.* and room.* namespaces</li>
-          <li>Third-party modules use x.&lt;vendor&gt;.* versioned IDs</li>
+          <li>First-party modules use core.*, transport.*, room.*, web.*, and game.* namespaces</li>
+          <li>Third-party modules use x.&lt;vendor&gt;.* versioned IDs and require user consent</li>
           <li>Per-feature token bucket quotas apply per peer</li>
-          <li>Trust checks run before module on_invoke handlers</li>
+          <li>Supernodes read operator feature manifests from <code>supernode.toml</code></li>
         </ul>
       </div>
     </div>
@@ -656,6 +662,8 @@ run_client.bat     # Windows</code></pre>
           <tr><td><code>core.chat.v1</code></td><td>first-party</td><td>trusted</td><td>Direct chat channel, typing indicators, delivery acks</td></tr>
           <tr><td><code>core.audio.opus</code></td><td>first-party</td><td>trusted</td><td>Direct peer voice over Opus frames</td></tr>
           <tr><td><code>core.file.v1</code></td><td>first-party</td><td>trusted</td><td>P2P file send and receive flows</td></tr>
+          <tr><td><code>transport.quic.*.v1</code></td><td>transport</td><td>trusted</td><td>QUIC audio, streams, tagged datagrams, PMTUD, migration, 0-RTT, priority, and flow-control descriptors</td></tr>
+          <tr><td><code>transport.quic.relay.v1</code></td><td>transport</td><td>room-member</td><td>Supernode relay datagram framing for room and fallback paths</td></tr>
           <tr><td><code>room.audio.sfu</code></td><td>first-party</td><td>room-member</td><td>Room audio relay via supernode SFU</td></tr>
           <tr><td><code>room.chat.v1</code></td><td>first-party</td><td>room-member</td><td>Room chat broadcast channels</td></tr>
           <tr><td><code>room.file.v1</code></td><td>first-party</td><td>room-member</td><td>Signed room file broadcast via supernode</td></tr>
@@ -676,7 +684,7 @@ run_client.bat     # Windows</code></pre>
     <h2>Architecture and Protocol</h2>
     <p class="section-sub">ConquerD is written entirely in Rust. Qt&nbsp;6&nbsp;/&nbsp;QML drives the UI via CXX-Qt; all transport, audio, crypto, and application logic are native Rust.</p>
 
-    <p style="color:var(--muted); font-size:.9rem; margin-bottom:1rem;">Two peers talk directly after sharing an invite link. Arrows show active bidirectional channels once the handshake completes.</p>
+    <p style="color:var(--muted); font-size:.9rem; margin-bottom:1rem;">Two peers talk directly after sharing an invite link. Arrows show active bidirectional channels once the handshake completes; supernodes assist with relay, SFU rooms, and opt-in hosted features without becoming identity authorities.</p>
 
     <div class="arch-diagram-wrap">
       <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg"
@@ -748,7 +756,7 @@ run_client.bat     # Windows</code></pre>
 
         <rect x="22" y="456" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
         <text x="44" y="476" fill="#e2e8f0" font-size="11" font-weight="600">Storage</text>
-        <text x="44" y="491" fill="#8b95a8" font-size="9.5">rusqlite (chat), JSON (peers, rooms)</text>
+        <text x="44" y="491" fill="#8b95a8" font-size="9.5">SQLite chat, peers.json, my_rooms.dat</text>
 
         <rect x="22" y="510" width="224" height="52" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
         <text x="44" y="530" fill="#e2e8f0" font-size="11" font-weight="600">Network I/O</text>
@@ -784,7 +792,7 @@ run_client.bat     # Windows</code></pre>
 
         <rect x="654" y="456" width="224" height="46" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
         <text x="676" y="476" fill="#e2e8f0" font-size="11" font-weight="600">Storage</text>
-        <text x="676" y="491" fill="#8b95a8" font-size="9.5">rusqlite (chat), JSON (peers, rooms)</text>
+        <text x="676" y="491" fill="#8b95a8" font-size="9.5">SQLite chat, peers.json, my_rooms.dat</text>
 
         <rect x="654" y="510" width="224" height="52" rx="8" fill="#0d0f14" stroke="#252a38" stroke-width="1"/>
         <text x="676" y="530" fill="#e2e8f0" font-size="11" font-weight="600">Network I/O</text>
@@ -874,6 +882,7 @@ run_client.bat     # Windows</code></pre>
       <span class="arch-chip purple">QUIC relay (supernode)</span>
       <span class="arch-chip">Portal access control</span>
       <span class="arch-chip green">SFU group call room</span>
+      <span class="arch-chip purple">Cluster gossip (failover)</span>
       <span class="arch-chip">Browser game relay</span>
       <span class="arch-chip green">WebTransport (H/3)</span>
     </div>
@@ -941,8 +950,8 @@ graph TD
         subgraph STORE["Persistence"]
             PS_C["peer_store - trust graph"]
             CS["chat_store - SQLite"]
-            RS["room_store - SQLite"]
-            AV["avatar_config.json"]
+            RS["room_store - my_rooms.dat"]
+            AV["avatar_config.rs - SVG identicons"]
             SET["settings.json"]
         end
 
@@ -962,9 +971,9 @@ graph TD
         TICKET["ticket.rs - relay tickets"]
         WT["webtransport.rs - H3 listener"]
         WAM["web_app_module.rs"]
-        ACCESS["access.rs - attestation policy"]
-        PS_S["peer_store - endpoint mailbox"]
-        CFG["config.rs - TOML"]
+        ACCESS["access.rs - portal gates"]
+        PS_S["peer_store + endpoint mailbox"]
+        CFG["manifest.rs + config.rs"]
     end
 
     subgraph FEATURES["conquerd-features  (Shared Library)"]
@@ -972,7 +981,7 @@ graph TD
         DESC["CapabilityDescriptor"]
         QUOTA["QuotaSystem - token buckets"]
         CF["ChannelFraming - 1-byte tag"]
-        WK["WellKnown caps&lt;br/&gt;core.audio.opus&lt;br/&gt;core.chat.v1&lt;br/&gt;core.file.v1&lt;br/&gt;room.audio.sfu&lt;br/&gt;web.host.*"]
+        WK["WellKnown caps&lt;br/&gt;transport.quic.*&lt;br/&gt;core.*&lt;br/&gt;room.*&lt;br/&gt;web.host.*&lt;br/&gt;game.relay.v1"]
     end
 
     subgraph OPUS_LIB["conquerd-opus  (Audio Codec)"]
@@ -1114,10 +1123,10 @@ graph TD
         <tbody>
           <tr><td>UI and app logic</td><td>Rust &middot; Qt 6 / QML (CXX-Qt)</td><td>Views, state, chat/call control, onboarding, settings</td></tr>
           <tr><td>Audio pipeline</td><td>Rust (CPAL + conquerd-opus)</td><td>Capture, Opus 1.6.1+ encode/decode (DRED + OSCE), VAD, jitter buffer, playback</td></tr>
-          <tr><td>Crypto primitives</td><td>Rust (ed25519-dalek, aes-gcm, argon2)</td><td>Ed25519, X25519, HKDF-SHA256, AES-256-GCM, replay window</td></tr>
+          <tr><td>Crypto primitives</td><td>Rust (ed25519-dalek, aes-gcm, argon2)</td><td>Ed25519, X25519, HKDF-SHA256, AES-256-GCM, timestamp freshness, ReplayGuard deduplication</td></tr>
           <tr><td>QUIC transport</td><td>Rust (quinn, embedded)</td><td>ConnectionManager P2P, QuicRelayClient relay, hole punch</td></tr>
-          <tr><td>Feature registry</td><td>Rust (conquerd-features rlib)</td><td>Module registration, descriptor negotiation, quota enforcement</td></tr>
-          <tr><td>Supernode</td><td>Rust (conquerd-supernode)</td><td>Relay/SFU, WebTransport portal (<code>web.host.h3.v1</code>), in-app QUIC portal (<code>web.host.app.v1</code>), game relay (<code>game.relay.v1</code>), room state, stats endpoints</td></tr>
+          <tr><td>Feature registry</td><td>Rust (conquerd-features rlib)</td><td>Module registration, descriptor negotiation, auth tiers, consent gates, inbound/outbound quota enforcement</td></tr>
+          <tr><td>Supernode</td><td>Rust (conquerd-supernode)</td><td>Relay/SFU, WebTransport portal (<code>web.host.h3.v1</code>), in-app QUIC portal (<code>web.host.app.v1</code>), game relay (<code>game.relay.v1</code>), ephemeral room state, stats endpoints, manifest/env config</td></tr>
         </tbody>
       </table>
     </div>
@@ -1150,14 +1159,14 @@ graph TD
   <div class="container" style="max-width:760px;">
     <p class="section-label">Security and Compliance</p>
     <h2>Code Signing Policy</h2>
-    <p class="section-sub">Binary code signing is being set up for release builds. During the alpha, builds are distributed unsigned with an Ed25519-signed release manifest as the root of trust.</p>
+    <p class="section-sub">Release integrity is anchored by an Ed25519-signed manifest; platform binary signing is supported and may be absent on early/nightly builds while approvals roll out.</p>
 
     <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
-      ConquerD is currently in its <strong>1.0.0-alpha</strong> testing phase. Alpha builds on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener noreferrer">nightly release</a> are <strong>not yet code-signed</strong>, so Windows SmartScreen or macOS Gatekeeper may warn before launch. Every release is published alongside a per-platform SHA-256 checksum and an Ed25519-signed release manifest that the bundled installer verifies before applying any update.
+      Current builds on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener noreferrer">nightly release</a> may not yet carry platform binary signatures, so Windows SmartScreen or macOS Gatekeeper can warn before launch. Every release is published alongside a per-platform SHA-256 checksum and an Ed25519-signed release manifest that the bundled installer verifies before applying any update.
     </p>
 
     <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
-      After alpha testing stabilises, release builds will be code-signed: Windows via <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a> (certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>) and macOS via the Apple Developer Program. The Ed25519 release-manifest key remains the canonical root of trust across all platforms.
+      Windows signing uses <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a> (certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>) when configured, and macOS release signing uses Apple Developer ID. The Ed25519 release-manifest key remains the canonical root of trust across all platforms.
     </p>
 
     <h3 style="font-size:1rem; margin:1.5rem 0 .6rem;">Team Roles</h3>
@@ -1182,8 +1191,8 @@ graph TD
 
 <section class="cta-section">
   <div class="container">
-    <h2></h2>
-    <p class="section-sub"></p>
+    <h2>Build, Host, or Test ConquerD</h2>
+    <p class="section-sub">The desktop client, supernode, installer, web SDK, and demos are all in the public repository.</p>
     <div class="cta-actions">
       <a href="https://github.com/ConquerD/ConquerD" class="btn btn-primary">View Repository</a>
       <a href="https://github.com/ConquerD/ConquerD/releases" target="_blank" rel="noopener" class="btn btn-ghost">Releases &rarr;</a>
