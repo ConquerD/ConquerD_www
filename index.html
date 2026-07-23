@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ConquerD &ndash; Private Voice, Chat, Rooms, Games, and Architecture</title>
-  <meta name="description" content="ConquerD is invite-only peer-to-peer voice, chat, rooms, files, and browser games with optional supernode relay, capability modules, WebTransport game relay, and full protocol reference." />
-  <meta property="og:title" content="ConquerD &ndash; Private Voice, Chat &amp; Games" />
-  <meta property="og:description" content="Invite-only P2P voice, chat, rooms, files, and game relay with module negotiation, architecture details, quick start, and code signing policy." />
+  <title>ConquerD &ndash; Private Voice, Chat, Rooms &amp; In-App Games</title>
+  <meta name="description" content="ConquerD is invite-only voice, chat, rooms, files, and in-app games over direct or relayed QUIC, with client-owned identity and capability modules." />
+  <meta property="og:title" content="ConquerD &ndash; Private Voice, Chat, Rooms &amp; In-App Games" />
+  <meta property="og:description" content="Invite-only communication over direct or relayed QUIC, with client-owned identity, end-to-end sealed room content, and capability modules." />
   <meta property="og:url" content="https://conquerd.com" />
   <link rel="canonical" href="https://conquerd.com/" />
   <link rel="icon" href="conquerd.ico" />
@@ -336,7 +336,7 @@
     <img class="wordmark-svg" src="logo-full.svg" alt="ConquerD://" />
   </div>
 
-  <div class="badge"><span class="dot"></span>v1.0.0 &nbsp;&middot;&nbsp; 620 unit tests &nbsp;&middot;&nbsp; MIT</div>
+  <div class="badge"><span class="dot"></span>v1.0.0 &nbsp;&middot;&nbsp; Invite-only &nbsp;&middot;&nbsp; MIT</div>
   <p class="tagline">Private voice, chat, rooms, files, and games for your group.<br />No accounts. No subscriptions. No one owns your server.</p>
 
   <div class="hero-actions">
@@ -391,7 +391,7 @@
     <p class="section-sub">Choose your path &mdash; grab a nightly test build or build from source.</p>
 
     <div class="card card-accent" style="margin-bottom:1.4rem; padding:.85rem 1.1rem;">
-      <p style="margin:0; font-size:.85rem; color:var(--muted); line-height:1.6;"><strong style="color:var(--text);">Nightly test builds.</strong> Current builds are published on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener">nightly release</a>. Some platform binaries may still be unsigned while signing approvals roll out, but release archives are protected by SHA-256 checksums and the Ed25519 release manifest used by the installer.</p>
+      <p style="margin:0; font-size:.85rem; color:var(--muted); line-height:1.6;"><strong style="color:var(--text);">Nightly test builds.</strong> Development builds are published on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener">rolling nightly release</a>. Nightly archives have SHA-256 sidecars and an intentionally unsigned development manifest; tagged releases require an Ed25519-signed manifest. Platform binaries may still be unsigned while signing approvals roll out.</p>
     </div>
 
     <div class="install-tabs">
@@ -512,7 +512,7 @@ cargo build --features qt-ui --release</code></pre>
       <div class="card card-accent">
         <div class="card-icon">&#x1F399;</div>
         <h3>Direct Voice First</h3>
-        <p>Calls prefer direct QUIC peer-to-peer. If NAT blocks direct paths, ConquerD falls back to relay automatically.</p>
+        <p>Calls prefer direct QUIC peer-to-peer. If a direct path is not ready within five seconds, ConquerD can use a temporary private SFU room and upgrade to direct transport later.</p>
       </div>
       <div class="card card-accent">
         <div class="card-icon">&#x1F4AC;</div>
@@ -522,17 +522,17 @@ cargo build --features qt-ui --release</code></pre>
       <div class="card card-green">
         <div class="card-icon">&#x1F465;</div>
         <h3>Rooms with SFU Relay</h3>
-        <p>Group rooms support up to 32 participants and nest into sub-rooms. Definitions stay client-owned in encrypted <code>my_rooms.dat</code>; supernodes host only ephemeral SFU relay state, admitting members via signed Merkle inclusion proofs so any cluster node can verify without seeing the original invite.</p>
+        <p>Group rooms support up to 32 participants and nest into sub-rooms. Definitions stay client-owned in encrypted <code>my_rooms.dat</code>; supernodes keep only ephemeral room state, while chat bodies, audio, and file chunks remain end-to-end sealed.</p>
       </div>
       <div class="card card-purple">
         <div class="card-icon">&#x1F6E1;</div>
-        <h3>Signed Release Updates</h3>
-        <p>Updates are distributed via GitHub Releases and verified against an Ed25519-signed release manifest before the bundled installer applies them.</p>
+        <h3>Verified Release Updates</h3>
+        <p>Updates come from GitHub Releases. Tagged releases use an Ed25519-signed manifest and archive hash verification; development nightlies remain explicitly unsigned.</p>
       </div>
       <div class="card">
         <div class="card-icon">&#x1F3AE;</div>
-        <h3>Browser Game Relay</h3>
-        <p>Supernodes host browser games over WebTransport. Bundled demos (cursor relay, brick breaker, shared drawing) connect via <code>game.relay.v1</code> from the native client&rsquo;s room portal.</p>
+        <h3>Native In-App Games</h3>
+        <p>Portal games load only inside ConquerD through <code>conquerd://</code>. Cursor relay, brick breaker, and shared drawing use <code>game.relay.v1</code> over the authenticated identity QUIC relay.</p>
       </div>
     </div>
   </div>
@@ -573,7 +573,7 @@ cargo build --features qt-ui --release</code></pre>
         <div class="card-icon">&#x1F310;</div>
         <h3>Connectivity</h3>
         <ul class="feat-list">
-          <li>Five-layer connection strategy with automatic fallback</li>
+          <li>Direct QUIC first, with coordinated hole punch and optional QUIC relay fallback</li>
           <li>STUN discovery and UPnP mapping support</li>
           <li>UDP hole punch coordination</li>
           <li>Supernode QUIC relay fallback for strict NAT</li>
@@ -596,8 +596,8 @@ cargo build --features qt-ui --release</code></pre>
         <h3>Files and Updates</h3>
         <ul class="feat-list">
           <li>P2P file transfer over QUIC streams with offer, accept, and progress states</li>
-          <li>GitHub Releases update checking with Ed25519 signed release-manifest verification</li>
-          <li>Per-platform SHA-256 checksums published with every release artifact</li>
+          <li>GitHub Releases update checking with signed-manifest verification for tagged releases</li>
+          <li>Per-platform SHA-256 archive verification, including the development nightly channel</li>
         </ul>
       </div>
       <div class="card card-purple">
@@ -608,11 +608,10 @@ cargo build --features qt-ui --release</code></pre>
           <li>Portal-based access checks before relay use</li>
           <li>Operator-controlled identity, environment configuration, and <code>supernode.toml</code> feature manifests</li>
           <li>Ephemeral SFU room hosting; room definitions and chat history remain on clients</li>
-          <li>Multi-node supernode clusters gossip relay, SFU, and room state for transparent peer failover</li>
+          <li>Multi-node supernode clusters replicate trust, room existence, and opaque room frames for failover</li>
           <li>Signed Space Merkle room tree lets any cluster node admit a proven member without ever seeing the original invite</li>
-          <li>WebTransport (<code>web.host.h3.v1</code>) for browser game clients</li>
-          <li>In-app portal (<code>web.host.app.v1</code>) over QUIC bidi-streams</li>
-          <li>Opaque game relay (<code>game.relay.v1</code>) with three bundled demos</li>
+          <li>Native in-app portal (<code>web.host.app.v1</code>) over identity-authenticated QUIC bidi-streams</li>
+          <li>Opaque in-app game relay (<code>game.relay.v1</code>) with three bundled demos</li>
         </ul>
       </div>
     </div>
@@ -625,7 +624,7 @@ cargo build --features qt-ui --release</code></pre>
   <div class="container">
     <p class="section-label">Capability Framework</p>
     <h2>Feature Modules</h2>
-    <p class="section-sub">Peers exchange CAPABILITY_ANNOUNCE after handshake. The current catalogue has 19 well-known transport, core, room, web, and game descriptors; only the shared intersection is activated and invokable.</p>
+    <p class="section-sub">Peers exchange CAPABILITY_ANNOUNCE after handshake. The built-in catalogue spans transport, core, room, portal, and game capabilities; only the negotiated intersection is invokable.</p>
 
     <div class="two-col">
       <div class="card card-accent">
@@ -664,12 +663,11 @@ cargo build --features qt-ui --release</code></pre>
           <tr><td><code>core.file.v1</code></td><td>first-party</td><td>trusted</td><td>P2P file send and receive flows</td></tr>
           <tr><td><code>transport.quic.*.v1</code></td><td>transport</td><td>trusted</td><td>QUIC audio, streams, tagged datagrams, PMTUD, migration, 0-RTT, priority, and flow-control descriptors</td></tr>
           <tr><td><code>transport.quic.relay.v1</code></td><td>transport</td><td>room-member</td><td>Supernode relay datagram framing for room and fallback paths</td></tr>
-          <tr><td><code>room.audio.sfu</code></td><td>first-party</td><td>room-member</td><td>Room audio relay via supernode SFU</td></tr>
-          <tr><td><code>room.chat.v1</code></td><td>first-party</td><td>room-member</td><td>Room chat broadcast channels</td></tr>
-          <tr><td><code>room.file.v1</code></td><td>first-party</td><td>room-member</td><td>Signed room file broadcast via supernode</td></tr>
-          <tr><td><code>web.host.app.v1</code></td><td>supernode-hosted</td><td>public</td><td>In-app portal over QUIC bidi-streams (<code>conquerd://</code> pages)</td></tr>
-          <tr><td><code>web.host.h3.v1</code></td><td>supernode-hosted</td><td>public</td><td>WebTransport (HTTP/3) listener for browser game clients</td></tr>
-          <tr><td><code>game.relay.v1</code></td><td>supernode-hosted</td><td>room-member</td><td>Opaque datagram fan-out relay for in-session browser games</td></tr>
+          <tr><td><code>room.audio.sfu</code></td><td>first-party</td><td>room-member</td><td>End-to-end sealed room audio relayed by the supernode SFU</td></tr>
+          <tr><td><code>room.chat.v1</code></td><td>first-party</td><td>room-member</td><td>End-to-end sealed room chat broadcast channels</td></tr>
+          <tr><td><code>room.file.v1</code></td><td>first-party</td><td>room-member</td><td>End-to-end sealed room file chunks relayed by the supernode</td></tr>
+          <tr><td><code>web.host.app.v1</code></td><td>supernode-hosted</td><td>public</td><td>Identity-authenticated in-app portal over QUIC bidi-streams (<code>conquerd://</code> pages)</td></tr>
+          <tr><td><code>game.relay.v1</code></td><td>supernode-hosted</td><td>room-member</td><td>Opaque identity-QUIC datagram fan-out for in-app game sessions</td></tr>
         </tbody>
       </table>
     </div>
@@ -808,7 +806,7 @@ cargo build --features qt-ui --release</code></pre>
         <text x="450" y="184" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Portal Access Control</text>
 
         <rect x="342" y="206" width="216" height="34" rx="6" fill="#0d0f14" stroke="#34d399" stroke-width="1" opacity=".7"/>
-        <text x="450" y="228" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">WebTransport (web.host.h3.v1)</text>
+        <text x="450" y="228" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">In-App Portal (web.host.app.v1)</text>
 
         <line x1="246" y1="209" x2="654" y2="209" stroke="#5b7fff" stroke-width="1.5" stroke-dasharray="5,3" opacity=".5"
               marker-start="url(#arr-bwd)" marker-end="url(#arr-fwd)"/>
@@ -883,12 +881,12 @@ cargo build --features qt-ui --release</code></pre>
       <span class="arch-chip">Portal access control</span>
       <span class="arch-chip green">SFU group call room</span>
       <span class="arch-chip purple">Cluster gossip (failover)</span>
-      <span class="arch-chip">Browser game relay</span>
-      <span class="arch-chip green">WebTransport (H/3)</span>
+      <span class="arch-chip">In-app game relay</span>
+      <span class="arch-chip green">conquerd:// QUIC portal</span>
     </div>
 
     <h3 style="margin:1.5rem 0 .5rem; font-size:1rem;">Full Component Map</h3>
-    <p style="color:var(--muted); font-size:.85rem; margin-bottom:.85rem;">All crates, modules, and external dependencies — arrows show data-flow and dependency direction.</p>
+    <p style="color:var(--muted); font-size:.85rem; margin-bottom:.85rem;">Selected major components and external dependencies &mdash; arrows show data-flow and dependency direction.</p>
     <div class="mermaid-zoom-container" id="arch-mermaid-container">
       <div class="mermaid-zoom-controls">
         <button class="mermaid-zoom-btn" id="arch-zoom-in"    title="Zoom in">+</button>
@@ -937,7 +935,7 @@ graph TD
             QUIC["QUIC - quinn"]
             WS["WebSocket - tungstenite"]
             RELAY_C["QuicRelayClient"]
-            NAT["relay.rs + UPnP"]
+            NAT["connection_fallback.rs + upnp.rs"]
         end
 
         subgraph ID_LAYER["Identity & Crypto"]
@@ -969,7 +967,7 @@ graph TD
         REL_S["relay.rs - QUIC forwarder"]
         SFU_S["sfu.rs - SFU room mux"]
         TICKET["ticket.rs - relay tickets"]
-        WT["webtransport.rs - H3 listener"]
+        PORTAL["web.host.app.v1 - QUIC bidi streams"]
         WAM["web_app_module.rs"]
         ACCESS["access.rs - portal gates"]
         PS_S["peer_store + endpoint mailbox"]
@@ -997,7 +995,7 @@ graph TD
         SIGN["sign-release-manifest"]
     end
 
-    subgraph BROWSER["Browser Clients"]
+    subgraph IN_APP_PORTAL["In-App Portal (native client only)"]
         SDK["web-sdk / conquerd.mjs"]
         GAMES["games/&lt;br/&gt;brick-breaker&lt;br/&gt;shared-drawing&lt;br/&gt;example"]
     end
@@ -1066,7 +1064,7 @@ graph TD
     WS -->|"WebSocket signaling"| SIG
     QUIC -->|"QUIC datagrams relay"| REL_S
     QUIC -->|"QUIC datagrams SFU audio"| SFU_S
-    WAC -->|"HTTP / conquerd URL"| WAM
+    WAC -->|"identity-authenticated QUIC"| PORTAL
 
     SIG --> HS_S
     SIG --> PS_S
@@ -1076,7 +1074,7 @@ graph TD
     REL_S --> ACCESS
     SFU_S --> ACCESS
     SFU_S --> WK
-    WT --> WAM
+    PORTAL --> WAM
     WAM --> WK
     CFG --> SIG
     CFG --> REL_S
@@ -1086,8 +1084,8 @@ graph TD
     WAM --> REG
 
     GAMES --> SDK
-    SDK -->|"WebTransport H3"| WT
-    BP -.->|"renders ConquerD pages"| GAMES
+    SDK -->|"window.conquerd channel bridge"| BP
+    BP -.->|"renders conquerd:// pages"| GAMES
 
     IGUI --> GH_API
     IGUI --> EXTRACT
@@ -1108,7 +1106,7 @@ graph TD
     class ID_C,CRYPTO_C,HS_C,TLS_C box
     class PS_C,CS,RS,AV,SET box
     class CPAL_IO,AEC_R,JB box
-    class SIG,HS_S,REL_S,SFU_S,TICKET,WT,WAM,ACCESS,PS_S,CFG box
+    class SIG,HS_S,REL_S,SFU_S,TICKET,PORTAL,WAM,ACCESS,PS_S,CFG box
     class REG,DESC,QUOTA,CF,WK shared
     class ENC,DEC,LIBOPUS shared
     class IGUI,GH_API,EXTRACT,SIGN box
@@ -1126,7 +1124,7 @@ graph TD
           <tr><td>Crypto primitives</td><td>Rust (ed25519-dalek, aes-gcm, argon2)</td><td>Ed25519, X25519, HKDF-SHA256, AES-256-GCM, timestamp freshness, ReplayGuard deduplication</td></tr>
           <tr><td>QUIC transport</td><td>Rust (quinn, embedded)</td><td>ConnectionManager P2P, QuicRelayClient relay, hole punch</td></tr>
           <tr><td>Feature registry</td><td>Rust (conquerd-features rlib)</td><td>Module registration, descriptor negotiation, auth tiers, consent gates, inbound/outbound quota enforcement</td></tr>
-          <tr><td>Supernode</td><td>Rust (conquerd-supernode)</td><td>Relay/SFU, WebTransport portal (<code>web.host.h3.v1</code>), in-app QUIC portal (<code>web.host.app.v1</code>), game relay (<code>game.relay.v1</code>), ephemeral room state, stats endpoints, manifest/env config</td></tr>
+          <tr><td>Supernode</td><td>Rust (conquerd-supernode)</td><td>QUIC relay, SFU, WebSocket membership/signaling fallback, native in-app QUIC portal (<code>web.host.app.v1</code>), opaque game relay (<code>game.relay.v1</code>), ephemeral room state, and manifest-driven hosting</td></tr>
         </tbody>
       </table>
     </div>
@@ -1141,11 +1139,21 @@ graph TD
           <tr><td>Chat</td><td>Text messages and typing states</td></tr>
           <tr><td>Call</td><td>Direct voice call request, accept, reject, end</td></tr>
           <tr><td>Relay</td><td>Supernode access negotiation and relay control</td></tr>
+          <tr><td>Relay Access</td><td>Access grant, denial, and payment-required signaling</td></tr>
+          <tr><td>Supernode Info</td><td>Supernode information request and response</td></tr>
           <tr><td>Room / SFU</td><td>Room membership, room audio, room chat, room files</td></tr>
+          <tr><td>SFU Group Key</td><td>End-to-end room sender-key distribution and acknowledgements inside encrypted envelopes</td></tr>
+          <tr><td>Space Tree</td><td>Signed Space-root announcements used for room admission proofs</td></tr>
           <tr><td>File Transfer</td><td>Chunked file send/receive lifecycle</td></tr>
+          <tr><td>Trust</td><td>Mutual trust request and acceptance</td></tr>
+          <tr><td>Peer Room Invite</td><td>Direct delivery of a room invite between trusted peers</td></tr>
           <tr><td>Hole Punch</td><td>Supernode-coordinated UDP punch timing</td></tr>
           <tr><td>Endpoint / Handle</td><td>Endpoint changes and display name propagation</td></tr>
-          <tr><td>Peer Updates</td><td>Version announce and update offer/accept/reject</td></tr>
+          <tr><td>Avatar</td><td>Avatar configuration propagation</td></tr>
+          <tr><td>Encrypted</td><td>Opaque end-to-end encrypted signaling envelope</td></tr>
+          <tr><td>Peer Updates</td><td>Peer version announcement</td></tr>
+          <tr><td>Build Attestation</td><td>Signed build challenge and response</td></tr>
+          <tr><td>Game Relay</td><td>Join, leave, and confirmation for an in-app game session</td></tr>
           <tr><td>Utility</td><td>Ping/pong, presence, speaking state, errors</td></tr>
         </tbody>
       </table>
@@ -1159,14 +1167,14 @@ graph TD
   <div class="container" style="max-width:760px;">
     <p class="section-label">Security and Compliance</p>
     <h2>Code Signing Policy</h2>
-    <p class="section-sub">Release integrity is anchored by an Ed25519-signed manifest; platform binary signing is supported and may be absent on early/nightly builds while approvals roll out.</p>
+    <p class="section-sub">Tagged-release integrity is anchored by an Ed25519-signed manifest; platform signing is conditional, and development nightlies are explicitly unsigned.</p>
 
     <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
-      Current builds on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener noreferrer">nightly release</a> may not yet carry platform binary signatures, so Windows SmartScreen or macOS Gatekeeper can warn before launch. Every release is published alongside a per-platform SHA-256 checksum and an Ed25519-signed release manifest that the bundled installer verifies before applying any update.
+      Builds on the <a href="https://github.com/ConquerD/ConquerD/releases/tag/nightly" target="_blank" rel="noopener noreferrer">nightly release</a> may not carry platform binary signatures, so Windows SmartScreen or macOS Gatekeeper can warn before launch. Nightly archives include SHA-256 sidecars and an unsigned development manifest. Tagged releases require the bundled installer to verify the project&rsquo;s Ed25519 manifest signature and the selected archive hash before applying an update.
     </p>
 
     <p style="color:var(--muted); font-size:.9rem; line-height:1.7; margin-top:1rem;">
-      Windows signing uses <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a> (certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>) when configured, and macOS release signing uses Apple Developer ID. The Ed25519 release-manifest key remains the canonical root of trust across all platforms.
+      Windows signing uses <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a> (certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>) when configured, and macOS signing uses Apple Developer ID when available. For tagged releases, the project&rsquo;s Ed25519 manifest key remains the cross-platform update root of trust.
     </p>
 
     <h3 style="font-size:1rem; margin:1.5rem 0 .6rem;">Team Roles</h3>
@@ -1174,9 +1182,9 @@ graph TD
       <table>
         <thead><tr><th>Role</th><th>Members</th></tr></thead>
         <tbody>
-          <tr><td><strong>Authors</strong> (trusted committers)</td><td><a href="https://github.com/orgs/ConquerD/teams/authors" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
-          <tr><td><strong>Reviewers</strong> (PR reviewers)</td><td><a href="https://github.com/orgs/ConquerD/teams/reviewers" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
-          <tr><td><strong>Approvers</strong> (release signing)</td><td><a href="https://github.com/orgs/ConquerD/teams/approvers" target="_blank" rel="noopener noreferrer">Owners</a></td></tr>
+          <tr><td><strong>Authors</strong> (trusted committers)</td><td><a href="https://github.com/orgs/ConquerD/teams/conquerd-authors" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
+          <tr><td><strong>Reviewers</strong> (PR reviewers)</td><td><a href="https://github.com/orgs/ConquerD/teams/conquerd-reviewers" target="_blank" rel="noopener noreferrer">Members</a></td></tr>
+          <tr><td><strong>Approvers</strong> (release signing)</td><td><a href="https://github.com/orgs/ConquerD/teams/conquerd-approvers" target="_blank" rel="noopener noreferrer">Owners</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -1192,7 +1200,7 @@ graph TD
 <section class="cta-section">
   <div class="container">
     <h2>Build, Host, or Test ConquerD</h2>
-    <p class="section-sub">The desktop client, supernode, installer, web SDK, and demos are all in the public repository.</p>
+    <p class="section-sub">The desktop client, supernode, installer, in-app portal SDK, and demos are all in the public repository.</p>
     <div class="cta-actions">
       <a href="https://github.com/ConquerD/ConquerD" class="btn btn-primary">View Repository</a>
       <a href="https://github.com/ConquerD/ConquerD/releases" target="_blank" rel="noopener" class="btn btn-ghost">Releases &rarr;</a>
