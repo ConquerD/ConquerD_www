@@ -218,12 +218,12 @@
     .hero-grid {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 0.92fr) minmax(500px, 1.08fr);
+      grid-template-columns: minmax(0, 1fr);
       align-items: center;
-      gap: clamp(3rem, 7vw, 6.4rem);
     }
 
     .hero-content {
+      max-width: 860px;
       min-width: 0;
     }
 
@@ -1298,60 +1298,6 @@
           </div>
         </div>
 
-        <div class="product-stage" aria-label="Illustrative ConquerD desktop interface">
-          <div class="app-window">
-            <div class="app-bar">
-              <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-              <span class="app-title">ConquerD</span>
-              <span class="app-mode">Direct connection</span>
-            </div>
-
-            <div class="app-body">
-              <aside class="app-sidebar" aria-label="Illustrative peer and room list">
-                <p class="side-label">Peers</p>
-                <div class="side-row active"><span class="avatar">M</span> Maya</div>
-                <div class="side-row"><span class="avatar green">A</span> Alex</div>
-                <div class="side-row"><span class="avatar red">J</span> Jordan</div>
-
-                <p class="side-label">Rooms</p>
-                <div class="side-row"><span class="avatar green">S</span> Studio</div>
-                <div class="side-row"><span class="avatar">G</span> Game night</div>
-              </aside>
-
-              <div class="conversation">
-                <div class="conversation-head">
-                  <div>
-                    <strong>Maya</strong>
-                    <small>Trusted peer &middot; direct QUIC</small>
-                  </div>
-                  <span class="call-button">Start call</span>
-                </div>
-
-                <div class="messages">
-                  <div class="message">
-                    Room is ready. Want to test the new audio path?
-                    <span class="message-meta">10:42</span>
-                  </div>
-                  <div class="message mine">
-                    Yep. Joining now.
-                    <span class="message-meta">Delivered &middot; 10:43</span>
-                  </div>
-                  <div class="message">
-                    Perfect. No relay needed on this network.
-                    <span class="message-meta">10:43</span>
-                  </div>
-                </div>
-
-                <div class="composer">Write a message&hellip;</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="security-toast">
-            <strong><span aria-hidden="true">✓</span> Identity verified</strong>
-            <p>Signed invite, trusted peer, and capability-negotiated session.</p>
-          </div>
-        </div>
       </div>
     </section>
 
