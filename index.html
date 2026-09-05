@@ -831,6 +831,38 @@
       grid-column: span 4;
     }
 
+    .bento-card.wide {
+      grid-column: span 12;
+    }
+
+    .bento-card.wide p {
+      max-width: 830px;
+    }
+
+    .bento-card .card-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      max-width: none;
+      margin-bottom: 0.85rem;
+      padding: 0.32rem 0.62rem;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+      font-size: 0.68rem;
+      font-weight: 780;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-flag::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
     .bento-visual {
       display: flex;
       flex-wrap: wrap;
@@ -944,6 +976,109 @@
       margin-bottom: 0;
       color: var(--muted);
       font-size: 0.9rem;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+    }
+
+    .status-card {
+      display: flex;
+      flex-direction: column;
+      padding: 1.55rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      gap: 0.42rem;
+      margin-bottom: 1.15rem;
+      padding: 0.4rem 0.72rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 780;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .status-tag::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-tag.shipped {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .status-tag.building {
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+    }
+
+    .status-tag.out {
+      background: var(--surface-soft);
+      color: var(--muted);
+    }
+
+    .status-card h3 {
+      margin-bottom: 1rem;
+      font-size: 1.18rem;
+      letter-spacing: -0.025em;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 0.65rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .status-list li {
+      position: relative;
+      padding-left: 1.15rem;
+      color: var(--muted);
+      font-size: 0.87rem;
+    }
+
+    .status-list li::before {
+      content: "";
+      position: absolute;
+      top: 0.6em;
+      left: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .status-card.building .status-list li::before {
+      background: var(--brand);
+    }
+
+    .status-card.out .status-list li::before {
+      background: #c3c6cf;
+    }
+
+    .status-note {
+      margin: 1.4rem 0 0;
+      padding: 1rem 1.15rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-soft);
+      color: var(--ink-soft);
+      font-size: 0.84rem;
     }
 
     .faq {
@@ -1120,6 +1255,10 @@
       .bento-card.third {
         grid-column: span 6;
       }
+
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 720px) {
@@ -1247,6 +1386,7 @@
         <a href="#privacy">Privacy</a>
         <a href="#how-it-works">How it works</a>
         <a href="#operators">Supernodes</a>
+        <a href="#status">Status</a>
         <a href="#faq">FAQ</a>
       </nav>
 
@@ -1309,6 +1449,7 @@
         <span class="trust-pill">Ed25519</span>
         <span class="trust-pill">AES-256-GCM</span>
         <span class="trust-pill">Opus</span>
+        <span class="trust-pill">VP8</span>
         <span class="trust-pill">Qt 6</span>
       </div>
     </div>
@@ -1338,8 +1479,9 @@
             <div class="benefit-number">02</div>
             <h3>Direct when possible</h3>
             <p>
-              Peer sessions prefer direct QUIC. Coordinated hole punching and optional
-              relay paths handle tougher networks without changing the feature model.
+              Peer sessions prefer direct QUIC, then work down an ordered list of
+              WebSocket candidates, then an optional supernode relay — all without
+              changing the feature model.
             </p>
           </article>
 
@@ -1371,7 +1513,7 @@
             <span class="privacy-check" aria-hidden="true">✓</span>
             <div>
               <strong>Room content stays sealed</strong>
-              <p>Chat bodies, Opus audio, and file chunks are end-to-end encrypted.</p>
+              <p>Chat bodies, Opus audio, file chunks, and video frames are end-to-end encrypted under a per-room sender key.</p>
             </div>
           </div>
           <div class="privacy-item">
@@ -1385,7 +1527,7 @@
             <span class="privacy-check" aria-hidden="true">✓</span>
             <div>
               <strong>Metadata is described honestly</strong>
-              <p>Relays may see peer IDs, room IDs, membership, timing, and byte volumes.</p>
+              <p>Relays may see peer IDs, room IDs, membership, timing, byte volumes, and camera on/off state.</p>
             </div>
           </div>
           <div class="privacy-item">
@@ -1470,8 +1612,9 @@
           <article class="bento-card third">
             <h3>Client-owned rooms</h3>
             <p>
-              Spaces and nested rooms are defined on participant devices. Supernodes
-              materialize ephemeral relay state only when needed.
+              Rooms and nested sub-rooms are defined on participant devices, up to 32
+              people each. Private rooms admit members by signed Merkle proof, so an
+              invited member can rejoin after the supernode's temporary state is gone.
             </p>
           </article>
 
@@ -1515,11 +1658,37 @@
               enhancement, jitter buffering, voice activity detection, and noise suppression.
             </p>
             <div class="bento-visual" aria-label="Audio pipeline features">
-              <span class="capability">Opus 1.6.1</span>
+              <span class="capability">libopus 1.6</span>
               <span class="capability">DRED</span>
               <span class="capability">OSCE</span>
               <span class="capability">VAD</span>
               <span class="capability">Jitter buffer</span>
+            </div>
+          </article>
+
+          <article class="bento-card wide">
+            <p class="card-flag">In development</p>
+            <h3>Video and screen sharing are being built in the open</h3>
+            <p>
+              Sharing a camera, a screen, or a single window runs on the same sealed
+              transport as everything else: VP8 on every platform and Media Foundation
+              H.264 on Windows, negotiated per call, with each frame signed and encrypted
+              under the room key. Picture-in-picture overlays are composited before
+              encoding, so a peer still receives exactly one stream. Audio shared with a
+              video travels on its own track, stamped from the same session clock as the
+              picture, and never touches the voice mix — muting someone does not silence
+              what they are presenting.
+              The encoder watches measured packet loss and lowers its bitrate the way the
+              voice path already does, so a link that degrades costs picture quality
+              rather than the call.
+            </p>
+            <div class="bento-visual" aria-label="Video capability identifiers and codecs">
+              <span class="capability">core.video.v1</span>
+              <span class="capability">room.video.sfu</span>
+              <span class="capability">core.audio.content.v1</span>
+              <span class="capability">room.audio.content.sfu</span>
+              <span class="capability">VP8</span>
+              <span class="capability">H.264 (Windows)</span>
             </div>
           </article>
         </div>
@@ -1530,7 +1699,10 @@
             <p>
               Host an optional supernode for QUIC relay, ephemeral SFU rooms, and
               native in-app portal features. It assists your group without becoming
-              its identity authority or decrypting room content.
+              its identity authority or decrypting room content. Several nodes can run
+              as one cluster: room chat and voice replicate between members, so peers
+              attached to different nodes share the same room and a node going down does
+              not take the room with it.
             </p>
           </div>
           <a
@@ -1543,7 +1715,66 @@
       </div>
     </section>
 
-    <section class="section section-white" id="faq">
+    <section class="section section-white" id="status">
+      <div class="shell">
+        <div class="section-heading center">
+          <p class="eyebrow">Where the project stands</p>
+          <h2>Honest status, not a launch page.</h2>
+          <p class="section-lede">
+            ConquerD is pre-release software built in public. Here is what works today,
+            what is still being built, and what will never be added.
+          </p>
+        </div>
+
+        <div class="status-grid">
+          <article class="status-card">
+            <p class="status-tag shipped">Working today</p>
+            <h3>Shipped in the client</h3>
+            <ul class="status-list">
+              <li>Local Ed25519 identity, OS-keyring key storage, signed <code>conquerd://</code> invites</li>
+              <li>Direct chat with delivery states, typing indicators, and local history you can trim or purge</li>
+              <li>Opus voice over direct QUIC, with a five-second fallback to a temporary private room</li>
+              <li>Rooms and nested sub-rooms for up to 32 people: voice, chat, and files, all sealed end to end</li>
+              <li>Supernode clusters that replicate room chat and voice across nodes and survive one going down</li>
+              <li>In-app portal pages and multiplayer games over the identity QUIC relay</li>
+              <li>Identity-derived avatars, tray badges, and a first-run onboarding wizard</li>
+            </ul>
+          </article>
+
+          <article class="status-card building">
+            <p class="status-tag building">In progress</p>
+            <h3>Being built now</h3>
+            <ul class="status-list">
+              <li>Video calling and screen sharing — transport, capture, codecs, and call UI exist and are encrypted, but video is not a finished feature yet</li>
+              <li>Camera capture is written for Windows, Linux, and macOS; only the Windows backend has captured frames from real hardware</li>
+              <li>Screen and window capture, plus shared application audio, are Windows-only for now</li>
+              <li>End-to-end product validation for video — the two-client and room checklist has not been signed off</li>
+              <li>Platform binary signing per release channel — the Ed25519 release manifest is the trust root today</li>
+            </ul>
+          </article>
+
+          <article class="status-card out">
+            <p class="status-tag out">Not planned</p>
+            <h3>Out of scope by design</h3>
+            <ul class="status-list">
+              <li>Accounts, a user directory, or any discovery service</li>
+              <li>A supernode that can read room content or hold room keys</li>
+              <li>A public web surface — portal pages and games run only inside the native client</li>
+              <li>Telemetry, analytics, or tracking of any kind</li>
+              <li>Mandatory infrastructure: two reachable peers never need a supernode</li>
+            </ul>
+          </article>
+        </div>
+
+        <p class="status-note">
+          Desktop only for now — Windows, macOS, and Linux. Supernode discovery stays
+          invite-based on purpose. Builds come from the rolling nightly channel, which
+          ships SHA-256 sidecars and an intentionally unsigned development manifest.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
       <div class="shell">
         <div class="section-heading center">
           <p class="eyebrow">The short answers</p>
@@ -1568,6 +1799,28 @@
             </p>
           </details>
           <details>
+            <summary>Can I make video calls yet?</summary>
+            <p>
+              Not as a finished feature. The camera, screen, and window paths are in the
+              client and every frame is signed and end-to-end encrypted, but video is
+              still in development: screen sharing and shared application audio are
+              Windows-only, the Linux and macOS capture backends have not produced
+              a frame from real hardware, and the two-client and room product
+              checklist has not been signed off.
+              Voice, chat, rooms, and files are the features to rely on today.
+            </p>
+          </details>
+          <details>
+            <summary>How many people fit in a room, and what happens if a node goes down?</summary>
+            <p>
+              Up to 32 participants per room. An operator can run several supernodes as a
+              cluster; room chat and voice replicate between members, so people attached
+              to different nodes are in the same room and losing one node does not end it.
+              Rooms live in supernode memory only and are cleared after about 15 minutes
+              with nobody in them — the authoritative definition stays on your device.
+            </p>
+          </details>
+          <details>
             <summary>Can I use the portal or games in a normal web browser?</summary>
             <p>
               No. Portal pages and games run inside the native client through
@@ -1576,11 +1829,25 @@
             </p>
           </details>
           <details>
+            <summary>Why would I need access to a ConquerD supernode?</summary>
+            <p>
+              You may not. If you can forward a port and open your firewall, two peers
+              connect directly over QUIC and nothing sits between them. When neither
+              side can do that — which is most home routers and nearly every
+              workplace network — a supernode gives you connectivity without any
+              firewall changes or port forwarding, and only one of the two of you needs
+              access to it. The trade is an extra hop: the relay is opaque and cannot
+              read your chat, audio, or files, but it does carry them, and it still sees
+              routing metadata such as peer IDs, timing, and byte volumes.
+            </p>
+          </details>
+          <details>
             <summary>What happens when a direct connection fails?</summary>
             <p>
-              ConquerD can coordinate UDP hole punching or use a chosen supernode QUIC
-              relay. Direct calls also have a temporary private-SFU fallback while a
-              direct path continues to establish.
+              ConquerD tries an ordered list of WebSocket candidates — a supernode you
+              are already connected to, the peer's own endpoint, a LAN hint — and then a
+              chosen supernode's QUIC relay. Direct calls also have a temporary
+              private-SFU fallback while a direct path continues to establish.
             </p>
           </details>
           <details>
@@ -1633,6 +1900,7 @@
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="#privacy">Privacy</a>
         <a href="#how-it-works">How it works</a>
+        <a href="#status">Status</a>
         <a href="#faq">FAQ</a>
         <a href="https://github.com/ConquerD/ConquerD/releases">Releases</a>
         <a href="https://github.com/ConquerD/ConquerD">GitHub</a>
