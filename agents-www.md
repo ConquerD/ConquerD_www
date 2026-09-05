@@ -81,6 +81,7 @@ The current built-in catalogue contains these stable capability ids:
 - Transport: `transport.quic.audio.v1`, `transport.quic.relay.v1`, `transport.quic.stream.v1`, `transport.quic.feature_datagram.v1`, `transport.quic.uni_stream.v1`, `transport.quic.stream_priority.v1`, `transport.quic.zero_rtt.v1`, `transport.quic.pmtud.v1`, `transport.quic.migration.v1`, `transport.quic.flow_control.v1`.
 - Peer features: `core.chat.v1`, `core.audio.opus`, `core.file.v1`.
 - Room features: `room.audio.sfu`, `room.chat.v1`, `room.file.v1`.
+- Video and content audio: `core.video.v1`, `core.audio.content.v1`, `room.video.sfu`, `room.audio.content.sfu`. These are in `local_capabilities()` and pinned by the `feature_ids_are_stable` golden test; they are advertised capabilities, which is not the same as video being a finished feature.
 - Portal and games: `web.host.app.v1`, `game.relay.v1`.
 
 Every feature has an authentication tier and quota policy. Third-party `x.<vendor>.*` capabilities require explicit consent. If the catalogue changes, verify it against `local_capabilities()` in `conquerd-features` rather than copying an old numeric total.
