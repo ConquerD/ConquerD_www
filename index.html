@@ -109,8 +109,8 @@
 
     .brand {
       display: inline-flex;
-      align-items: center;
-      gap: 0.7rem;
+      align-items: baseline;
+      gap: 0.07em;
       color: var(--ink);
       font-size: 1.08rem;
       font-weight: 780;
@@ -118,9 +118,12 @@
       text-decoration: none;
     }
 
+    /* The mark stands in for the final "D" of the wordmark, so it is sized to
+       cap height and sits on the text baseline (an image's baseline is its
+       bottom edge, which is also the bottom of the D glyph in logo.svg). */
     .brand img {
-      width: 35px;
-      height: 24px;
+      height: 0.72em;
+      width: auto;
       object-fit: contain;
     }
 
@@ -1377,8 +1380,7 @@
   <header class="site-header">
     <div class="shell nav">
       <a class="brand" href="#top" aria-label="ConquerD home">
-        <img src="logo.svg" alt="" />
-        <span>ConquerD</span>
+        <span>Conquer</span><img src="logo.svg" alt="" />
       </a>
 
       <nav class="nav-links" aria-label="Primary navigation">
@@ -1891,9 +1893,8 @@
   <footer class="site-footer">
     <div class="shell footer-row">
       <div>
-        <a class="brand" href="#top">
-          <img src="logo.svg" alt="" />
-          <span>ConquerD</span>
+        <a class="brand" href="#top" aria-label="ConquerD home">
+          <span>Conquer</span><img src="logo.svg" alt="" />
         </a>
         <p class="footer-copy">Open-source, invite-only peer connectivity. MIT licensed.</p>
       </div>
