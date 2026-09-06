@@ -1390,6 +1390,7 @@
         <a href="#operators">Supernodes</a>
         <a href="#status">Status</a>
         <a href="#faq">FAQ</a>
+        <a href="architecture.html">Architecture</a>
       </nav>
 
       <div class="nav-actions">
@@ -1577,7 +1578,7 @@
           <h2>More than a private messenger.</h2>
           <p class="section-lede">
             A native desktop client, a capability framework, and optional infrastructure
-            you can operate yourself.
+            you can operate yourself. <a href="architecture.html">See the full architecture &rarr;</a>
           </p>
         </div>
 
@@ -1591,10 +1592,7 @@
             <div class="bento-visual" aria-label="Example capability identifiers">
               <span class="capability">core.chat.v1</span>
               <span class="capability">core.audio.opus</span>
-              <span class="capability">core.file.v1</span>
               <span class="capability">room.audio.sfu</span>
-              <span class="capability">room.chat.v1</span>
-              <span class="capability">room.file.v1</span>
             </div>
           </article>
 
@@ -1656,15 +1654,13 @@
           <article class="bento-card medium">
             <h3>Native audio, built for conversation</h3>
             <p>
-              The Rust audio path combines Opus, DRED loss recovery, OSCE speech
-              enhancement, jitter buffering, voice activity detection, and noise suppression.
+              Opus voice with loss recovery, speech enhancement, and noise
+              suppression built in — not a third-party plugin.
             </p>
             <div class="bento-visual" aria-label="Audio pipeline features">
               <span class="capability">libopus 1.6</span>
               <span class="capability">DRED</span>
               <span class="capability">OSCE</span>
-              <span class="capability">VAD</span>
-              <span class="capability">Jitter buffer</span>
             </div>
           </article>
 
@@ -1672,23 +1668,12 @@
             <p class="card-flag">In development</p>
             <h3>Video and screen sharing are being built in the open</h3>
             <p>
-              Sharing a camera, a screen, or a single window runs on the same sealed
-              transport as everything else: VP8 on every platform and Media Foundation
-              H.264 on Windows, negotiated per call, with each frame signed and encrypted
-              under the room key. Picture-in-picture overlays are composited before
-              encoding, so a peer still receives exactly one stream. Audio shared with a
-              video travels on its own track, stamped from the same session clock as the
-              picture, and never touches the voice mix — muting someone does not silence
-              what they are presenting.
-              The encoder watches measured packet loss and lowers its bitrate the way the
-              voice path already does, so a link that degrades costs picture quality
-              rather than the call.
+              Camera and screen sharing run on the same sealed transport as
+              everything else — VP8 on every platform, Windows hardware H.264,
+              and shared audio kept in sync with the picture. It's real and
+              encrypted, but not finished. <a href="architecture.html">See exact platform coverage &rarr;</a>
             </p>
-            <div class="bento-visual" aria-label="Video capability identifiers and codecs">
-              <span class="capability">core.video.v1</span>
-              <span class="capability">room.video.sfu</span>
-              <span class="capability">core.audio.content.v1</span>
-              <span class="capability">room.audio.content.sfu</span>
+            <div class="bento-visual" aria-label="Video codecs">
               <span class="capability">VP8</span>
               <span class="capability">H.264 (Windows)</span>
             </div>
@@ -1701,10 +1686,8 @@
             <p>
               Host an optional supernode for QUIC relay, ephemeral SFU rooms, and
               native in-app portal features. It assists your group without becoming
-              its identity authority or decrypting room content. Several nodes can run
-              as one cluster: room chat and voice replicate between members, so peers
-              attached to different nodes share the same room and a node going down does
-              not take the room with it.
+              its identity authority or decrypting room content, and several nodes
+              can cluster together for resilience.
             </p>
           </div>
           <a
@@ -1723,8 +1706,8 @@
           <p class="eyebrow">Where the project stands</p>
           <h2>Honest status, not a launch page.</h2>
           <p class="section-lede">
-            ConquerD is pre-release software built in public. Here is what works today,
-            what is still being built, and what will never be added.
+            ConquerD is pre-release software built in public. Here is the short
+            version — <a href="architecture.html#status">see the architecture page for the full breakdown</a>.
           </p>
         </div>
 
@@ -1733,13 +1716,11 @@
             <p class="status-tag shipped">Working today</p>
             <h3>Shipped in the client</h3>
             <ul class="status-list">
-              <li>Local Ed25519 identity, OS-keyring key storage, signed <code>conquerd://</code> invites</li>
-              <li>Direct chat with delivery states, typing indicators, and local history you can trim or purge</li>
-              <li>Opus voice over direct QUIC, with a five-second fallback to a temporary private room</li>
-              <li>Rooms and nested sub-rooms for up to 32 people: voice, chat, and files, all sealed end to end</li>
-              <li>Supernode clusters that replicate room chat and voice across nodes and survive one going down</li>
-              <li>In-app portal pages and multiplayer games over the identity QUIC relay</li>
-              <li>Identity-derived avatars, tray badges, and a first-run onboarding wizard</li>
+              <li>Local Ed25519 identity and signed <code>conquerd://</code> invites</li>
+              <li>Direct chat and voice, with a fallback to a temporary private room</li>
+              <li>Rooms for up to 32 people: voice, chat, and files, sealed end to end</li>
+              <li>Supernode clusters that keep a room alive if one node goes down</li>
+              <li>In-app portal pages and multiplayer games</li>
             </ul>
           </article>
 
@@ -1747,11 +1728,9 @@
             <p class="status-tag building">In progress</p>
             <h3>Being built now</h3>
             <ul class="status-list">
-              <li>Video calling and screen sharing — transport, capture, codecs, and call UI exist and are encrypted, but video is not a finished feature yet</li>
-              <li>Camera capture is written for Windows, Linux, and macOS; only the Windows backend has captured frames from real hardware</li>
-              <li>Screen and window capture, plus shared application audio, are Windows-only for now</li>
-              <li>End-to-end product validation for video — the two-client and room checklist has not been signed off</li>
-              <li>Platform binary signing per release channel — the Ed25519 release manifest is the trust root today</li>
+              <li>Video calling and screen sharing — encrypted and working, but not a finished feature yet</li>
+              <li>Camera capture beyond Windows still needs real-hardware validation</li>
+              <li>Platform binary signing per release channel</li>
             </ul>
           </article>
 
@@ -1781,6 +1760,7 @@
         <div class="section-heading center">
           <p class="eyebrow">The short answers</p>
           <h2>Frequently asked questions.</h2>
+          <p class="section-lede">Deeper technical detail lives on the <a href="architecture.html">architecture page</a>.</p>
         </div>
 
         <div class="faq">
@@ -1803,23 +1783,17 @@
           <details>
             <summary>Can I make video calls yet?</summary>
             <p>
-              Not as a finished feature. The camera, screen, and window paths are in the
-              client and every frame is signed and end-to-end encrypted, but video is
-              still in development: screen sharing and shared application audio are
-              Windows-only, the Linux and macOS capture backends have not produced
-              a frame from real hardware, and the two-client and room product
-              checklist has not been signed off.
-              Voice, chat, rooms, and files are the features to rely on today.
+              Not as a finished feature. Camera and screen paths exist and are
+              end-to-end encrypted, but coverage and validation outside Windows
+              are incomplete. Voice, chat, rooms, and files are what to rely on today.
             </p>
           </details>
           <details>
             <summary>How many people fit in a room, and what happens if a node goes down?</summary>
             <p>
-              Up to 32 participants per room. An operator can run several supernodes as a
-              cluster; room chat and voice replicate between members, so people attached
-              to different nodes are in the same room and losing one node does not end it.
-              Rooms live in supernode memory only and are cleared after about 15 minutes
-              with nobody in them — the authoritative definition stays on your device.
+              Up to 32 participants per room. A cluster of supernodes can keep a room
+              alive even if one node goes down. Rooms live in supernode memory only —
+              the authoritative definition stays on your device.
             </p>
           </details>
           <details>
@@ -1833,23 +1807,18 @@
           <details>
             <summary>Why would I need access to a ConquerD supernode?</summary>
             <p>
-              You may not. If you can forward a port and open your firewall, two peers
-              connect directly over QUIC and nothing sits between them. When neither
-              side can do that — which is most home routers and nearly every
-              workplace network — a supernode gives you connectivity without any
-              firewall changes or port forwarding, and only one of the two of you needs
-              access to it. The trade is an extra hop: the relay is opaque and cannot
-              read your chat, audio, or files, but it does carry them, and it still sees
-              routing metadata such as peer IDs, timing, and byte volumes.
+              You may not — two peers with open firewalls connect directly over QUIC.
+              When that is not possible, a supernode gives you connectivity without
+              port forwarding. It is opaque to your content but still sees routing
+              metadata such as peer IDs and timing.
             </p>
           </details>
           <details>
             <summary>What happens when a direct connection fails?</summary>
             <p>
-              ConquerD tries an ordered list of WebSocket candidates — a supernode you
-              are already connected to, the peer's own endpoint, a LAN hint — and then a
-              chosen supernode's QUIC relay. Direct calls also have a temporary
-              private-SFU fallback while a direct path continues to establish.
+              ConquerD works down an ordered list of fallbacks, ending with a chosen
+              supernode's QUIC relay. Direct calls also have a temporary private-room
+              fallback while a direct path keeps trying to connect.
             </p>
           </details>
           <details>
@@ -1903,6 +1872,7 @@
         <a href="#how-it-works">How it works</a>
         <a href="#status">Status</a>
         <a href="#faq">FAQ</a>
+        <a href="architecture.html">Architecture</a>
         <a href="https://github.com/ConquerD/ConquerD/releases">Releases</a>
         <a href="https://github.com/ConquerD/ConquerD">GitHub</a>
       </nav>
