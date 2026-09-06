@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConquerD Architecture | Identity, Transport &amp; Trust</title>
+  <meta name="description" content="Inside ConquerD: client-owned identity, capability-negotiated QUIC connections, opaque supernode relays, and end-to-end encrypted rooms." />
+  <link rel="icon" href="conquerd.ico" />
+  <style>
+    :root { color-scheme: light; --ink: #11131a; --soft: #434957; --muted: #616775; --paper: #fbfaf8; --line: #dedfe3; --brand: #474cc7; --green: #11684e; --red: #b22d40; --max: 1180px; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", sans-serif; line-height: 1.65; letter-spacing: 0; }
+    a { color: var(--brand); text-underline-offset: 4px; }
+    a:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 5px; }
+    .shell { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
+    .skip { position: absolute; top: -100px; left: 16px; padding: 12px; background: white; z-index: 20; }
+    .skip:focus { top: 12px; }
+    header { position: sticky; top: 0; z-index: 10; background: rgba(251,250,248,.97); border-bottom: 1px solid var(--line); }
+    .topbar { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: baseline; gap: 2px; color: var(--ink); font-weight: 800; font-size: 19px; text-decoration: none; }
+    .brand img { height: 14px; width: auto; }
+    .topbar nav { display: flex; gap: 24px; align-items: center; font-size: 14px; }
+    .topbar nav a { color: var(--soft); text-decoration: none; }
+    .topbar nav [aria-current] { color: var(--brand); border-bottom: 2px solid var(--brand); }
+    .intro { padding: 60px 0 36px; border-bottom: 1px solid var(--line); }
+    .kicker, .section-no { color: var(--brand); font: 600 12px/1.5 Consolas, monospace; text-transform: uppercase; }
+    .intro h1 { font-size: 48px; line-height: 1.12; margin: 14px 0 20px; font-weight: 700; }
+    .intro p { max-width: 770px; font-size: 19px; color: var(--soft); }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 28px; font-size: 13px; color: var(--muted); }
+    .layout { display: grid; grid-template-columns: 190px minmax(0,1fr); gap: 52px; }
+    aside { align-self: start; position: sticky; top: 104px; padding-top: 35px; }
+    aside p { margin: 0 0 12px; font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    aside nav { display: grid; gap: 4px; }
+    aside a { padding: 6px 0; font-size: 14px; text-decoration: none; color: var(--soft); }
+    aside a:hover { color: var(--brand); }
+    article { min-width: 0; }
+    section { padding: 36px 0 44px; border-bottom: 1px solid var(--line); }
+    h2 { margin: 8px 0 14px; font-size: 29px; line-height: 1.25; }
+    h3 { margin: 0 0 8px; font-size: 17px; line-height: 1.4; }
+    p { margin: 0 0 18px; }
+    .lead { color: var(--soft); max-width: 730px; }
+    code { font-family: Consolas, monospace; font-size: .88em; overflow-wrap: anywhere; }
+    .system-map { margin: 26px 0 18px; padding: 28px 22px; border: 1px solid var(--line); border-radius: 8px; background: repeating-linear-gradient(0deg, transparent, transparent 23px, #e9eaed 24px), repeating-linear-gradient(90deg, #fff, #fff 23px, #e9eaed 24px); }
+    .peers { display: grid; grid-template-columns: 1fr 135px 1fr; align-items: center; }
+    .endpoint { background: #fff; border: 1px solid #a4abb7; border-top: 3px solid var(--brand); padding: 18px; }
+    .endpoint strong { display: block; font-size: 17px; }
+    .endpoint span { display: block; font-size: 13px; color: var(--soft); }
+    .wire { text-align: center; font: 12px/1.5 Consolas, monospace; color: var(--brand); }
+    .wire b { display: block; font-size: 25px; }
+    .relay-path { display: flex; justify-content: space-around; color: var(--green); font-size: 25px; margin: 6px 0; }
+    .relay { border-top-color: var(--green); text-align: center; }
+    figcaption { color: var(--muted); font-size: 13px; margin-top: 18px; }
+    .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 26px; }
+    .twocol > div { min-width: 0; }
+    .twocol p, li { color: var(--soft); font-size: 15px; }
+    ul { padding-left: 20px; margin: 10px 0; }
+    li + li { margin-top: 8px; }
+    .boundary { border-left: 3px solid var(--green); padding-left: 18px; }
+    .boundary.restricted { border-color: var(--red); }
+    .boundary h3 { color: var(--green); }
+    .boundary.restricted h3 { color: var(--red); }
+    .steps { counter-reset: steps; list-style: none; padding: 0; margin: 26px 0; }
+    .steps li { position: relative; padding: 0 0 22px 44px; margin: 0; border-left: 1px solid var(--line); margin-left: 13px; }
+    .steps li::before { counter-increment: steps; content: counter(steps, decimal-leading-zero); position: absolute; left: -14px; top: 0; background: var(--paper); color: var(--brand); font: 600 13px/28px Consolas, monospace; }
+    .steps strong { display: block; color: var(--ink); }
+    .note { border-left: 3px solid var(--brand); padding: 12px 0 12px 18px; margin: 22px 0 0; color: var(--soft); font-size: 14px; }
+    .table-scroll { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+    caption { text-align: left; color: var(--muted); margin-bottom: 12px; font-size: 13px; }
+    th, td { padding: 15px 14px 15px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-weight: 600; }
+    thead th { font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    td { color: var(--soft); }
+    td:first-child { width: 30%; }
+    .layers { margin-top: 24px; }
+    .layer { display: grid; grid-template-columns: 185px 1fr; gap: 20px; padding: 18px 0; border-top: 1px solid var(--line); }
+    .layer p { margin: 0; font-size: 14px; color: var(--soft); }
+    .layer a { font-size: 14px; }
+    details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+    summary { cursor: pointer; font-weight: 600; }
+    details p { margin: 12px 0 0; color: var(--soft); font-size: 15px; }
+    .status { font: 600 12px/1.5 Consolas, monospace; color: var(--green); }
+    .status.limited { color: #895013; }
+    footer { padding: 32px 0; }
+    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; font-size: 13px; color: var(--muted); }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; gap: 0; } aside { position: static; padding: 22px 0 0; } aside nav { display: flex; flex-wrap: wrap; gap: 4px 22px; } aside p { display: none; } }
+    @media (max-width: 600px) { .shell { width: calc(100% - 32px); } .topbar { gap: 12px; } .topbar nav { gap: 14px; font-size: 12px; } .intro { padding-top: 34px; } .intro h1 { font-size: 34px; } .intro p { font-size: 17px; } h2 { font-size: 25px; } .twocol { grid-template-columns: 1fr; gap: 24px; } .peers { grid-template-columns: 1fr; gap: 12px; } .wire b { display: inline; padding-right: 8px; } .endpoint { padding: 14px; } .system-map { padding: 20px 16px; } .layer { grid-template-columns: 1fr; gap: 8px; } th, td { padding-right: 10px; } .topbar .source-nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { header, aside { display: none; } .layout { display: block; } .shell { width: 100%; } body { background: white; } section, .system-map { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to architecture</a>
+  <header>
+    <div class="shell topbar">
+      <a class="brand" href="index.html" aria-label="ConquerD home">Conquer<img src="logo.svg" alt="D" /></a>
+      <nav aria-label="Main navigation"><a href="index.html">Overview</a><a href="architecture.html" aria-current="page">Architecture</a><a class="source-nav" href="https://github.com/ConquerD/ConquerD">Source code</a></nav>
+    </div>
+  </header>
+  <main id="main" class="shell">
+    <div class="intro">
+      <div class="kicker">Technical reference / 01</div>
+      <h1>ConquerD architecture</h1>
+      <p>Identity lives on the device. Connections are negotiated between peers. Supernodes help move the bytes, without becoming the authority behind the conversation.</p>
+      <div class="meta"><span>Rust + Qt / QML</span><span>QUIC transport</span><span>Invite-only trust</span><span>Reviewed <time datetime="2026-09-06">06 September 2026</time></span></div>
+    </div>
+    <div class="layout">
+      <aside><p>On this page</p><nav aria-label="Architecture sections"><a href="#system">01 &nbsp; System map</a><a href="#trust">02 &nbsp; Trust boundaries</a><a href="#connection">03 &nbsp; Connection lifecycle</a><a href="#features">04 &nbsp; Feature framework</a><a href="#apps">05 &nbsp; Apps &amp; access portals</a><a href="#media">06 &nbsp; Media &amp; files</a><a href="#cluster">07 &nbsp; Rooms &amp; clusters</a><a href="#code">08 &nbsp; Codebase</a><a href="#status">09 &nbsp; Current limits</a></nav></aside>
+      <article>
+        <section id="system">
+          <div class="section-no">01 / Topology</div><h2>Peers first. Infrastructure optional.</h2>
+          <p class="lead">The native client owns identity, trusted peers, conversations, and room definitions. Direct and relayed sessions expose the same channel model: reliable streams, unidirectional streams, and datagrams.</p>
+          <figure class="system-map" aria-label="Two native clients connect directly over QUIC or through an optional supernode relay.">
+            <div class="peers"><div class="endpoint"><strong>Native client A</strong><span>Identity + trust + local stores</span><span>Qt / QML &rarr; ConnectionManager</span></div><div class="wire"><b aria-hidden="true">&harr;</b>Direct QUIC</div><div class="endpoint"><strong>Native client B</strong><span>Identity + trust + local stores</span><span>Qt / QML &rarr; ConnectionManager</span></div></div>
+            <div class="relay-path" aria-hidden="true"><span>&updownarrow;</span><span>&updownarrow;</span></div>
+            <div class="endpoint relay"><strong>Optional supernode</strong><span>QUIC relay &middot; ephemeral SFU rooms &middot; in-app portal</span><span>Routes encrypted room content; does not hold room content keys</span></div>
+            <figcaption>Direct transport needs no supernode on the data path. Room features and hosted portals use a trusted supernode connection, but do not trust that node with room content.</figcaption>
+          </figure>
+          <div class="twocol"><div><h3>No account service</h3><p>A signed invite bootstraps trust. There is no first-party identity, discovery, or presence backend and no central feature registry.</p></div><div><h3>One feature framework</h3><p>Voice, chat, files, video, rooms, and games sit on capability negotiation. The desktop interface consumes the framework rather than bypassing it.</p></div></div>
+        </section>
+        <section id="trust">
+          <div class="section-no">02 / Security model</div><h2>Trust the peer. Limit the relay.</h2>
+          <p class="lead">Ed25519 identities sign invites and signaling. The invite handshake binds its transcript and derives a session key with X25519 and HKDF. Post-handshake signaling checks signatures, timestamp freshness, and replay protection.</p>
+          <div class="twocol"><div class="boundary"><h3>Visible to a supernode</h3><ul><li>Peer identities, room membership, and routing identifiers.</li><li>Connection timing, message types, signatures, and byte volumes.</li><li>Ephemeral room names and file-offer metadata, including file size and path.</li></ul></div><div class="boundary restricted"><h3>Not available to a supernode</h3><ul><li>Decrypted room chat, voice, video, or shared-audio content.</li><li>Plaintext file chunks or room content keys.</li><li>A stored conversation archive or file cache for later delivery.</li></ul></div></div>
+          <p class="note">Privacy is not anonymity: routing metadata remains visible. Direct relay encryption uses a static pairwise key and does not provide forward secrecy. Room content fails closed when real group-key material is unavailable.</p>
+          <details><summary>How room keys are distributed</summary><p>The lexicographically smallest current member acts as the elected keyer. It seals epoch key material to each member and rotates the room key on departure. Receivers accept keys only from the elected keyer at a plausible epoch; acknowledgment and bounded retries cover lost distributions.</p></details>
+          <details><summary>Where replay protection differs</summary><p>Signed signaling uses a five-minute freshness window and a per-sender signature replay guard. Real-time room audio and receiver-idempotent ordered file payloads skip signature deduplication, but still require valid signatures and fresh timestamps.</p></details>
+        </section>
+        <section id="connection">
+          <div class="section-no">03 / Session lifecycle</div><h2>From an invite to a usable channel.</h2>
+          <ol class="steps"><li><strong>Accept a signed invite</strong>The authenticated handshake establishes the peer relationship. The client persists trust locally; supernode identity is taken from the signed invite, not guessed from a relay URL.</li><li><strong>Exchange capabilities</strong><code>CAPABILITY_ANNOUNCE</code> advertises supported features. Matching IDs and major versions define the negotiated intersection.</li><li><strong>Establish transport</strong>Direct sessions use an embedded <code>quinn::Endpoint</code>. A supernode relay uses identity-authenticated QUIC. Signaling prefers an established QUIC stream, with WebSocket fallback.</li><li><strong>Invoke an agreed feature</strong>Feature intersection, authentication tier, and required user consent are checked before dispatch. Inbound and outbound traffic is quota-controlled.</li></ol>
+          <div class="twocol"><div><h3>When direct calling stalls</h3><p>After call acceptance, a five-second direct-connect deadline can trigger a temporary private SFU room on a mutually trusted connected supernode. Pending fallback is canceled if direct transport recovers or the call ends.</p></div><div><h3>When a client restarts</h3><p>Relay grants and supernode information prefer the live WebSocket, so an old QUIC queue cannot capture reconnect replies. Portal requests wait for relay readiness outside the manager event loop, with a bounded timeout.</p></div></div>
+        </section>
+        <section id="features">
+          <div class="section-no">04 / Capability layer</div><h2>Features are contracts, not side channels.</h2>
+          <p class="lead"><code>conquerd-features</code> is shared by clients and supernodes. Its registry owns descriptors, authentication tiers, consent, quotas, and channel framing. Optional features do not become mandatory services.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Capability families"><table><caption>Representative first-party capabilities</caption><thead><tr><th scope="col">Family</th><th scope="col">Stable capability IDs</th><th scope="col">Delivery</th></tr></thead><tbody>
+            <tr><th scope="row">Peer communication</th><td><code>core.chat.v1</code><br /><code>core.audio.opus</code><br /><code>core.file.v1</code></td><td>Reliable chat and files; low-latency voice datagrams.</td></tr>
+            <tr><th scope="row">Rooms</th><td><code>room.chat.v1</code><br /><code>room.audio.sfu</code><br /><code>room.file.v1</code></td><td>Membership-gated, opaque forwarding through supernodes.</td></tr>
+            <tr><th scope="row">Video &amp; shared audio</th><td><code>core.video.v1</code><br /><code>room.video.sfu</code><br /><code>core.audio.content.v1</code><br /><code>room.audio.content.sfu</code></td><td>Dedicated tagged datagrams, separate from microphone audio.</td></tr>
+            <tr><th scope="row">Portal &amp; games</th><td><code>web.host.app.v1</code><br /><code>game.relay.v1</code></td><td>QUIC bidirectional portal streams and opaque game datagrams.</td></tr>
+          </tbody></table></div>
+          <p class="note">Custom capabilities use <code>x.&lt;vendor&gt;.*</code> and require explicit consent. Every feature has an authentication tier and quota policy; disconnect clears both inbound and outbound quota state.</p>
+        </section>
+        <section id="apps">
+          <div class="section-no">05 / Hosted experiences</div><h2>Games are one consumer. Apps can use the same foundations.</h2>
+          <p class="lead">A shared drawing surface and a multiplayer game have similar connectivity needs: load an interface, identify the participants, join a session, and exchange updates. ConquerD separates the hosted interface from the peer data path, so those building blocks can also support collaborative tools and node-specific portals without introducing a central account service.</p>
+          <div class="layers">
+            <div class="layer"><h3>Host the interface</h3><p><code>web.host.app.v1</code> serves HTML, CSS, JavaScript, and assets from the supernode's <code>web/</code> and <code>games/</code> directories. The native client's embedded Chromium loads them through <code>conquerd://</code>, using QUIC bidirectional request/response streams. This hosts an interface; it does not provide an application database.</p></div>
+            <div class="layer"><h3>Use the native bridge</h3><p><code>window.conquerd.ready</code> supplies the local peer identity, supernode identity, and portal APIs. Channel open, send, poll, and close operations use the authenticated relay connection through <code>/_conquerd/channel/*</code>. Portal fetches reach the hosting node without a separate public HTTP endpoint.</p></div>
+            <div class="layer"><h3>Exchange session updates</h3><p>The current <code>ConquerdClient</code> JavaScript SDK opens a named session and sends bytes through <code>game.relay.v1</code>. Cursor positions, drawing previews, and game-state updates can share this opaque datagram fan-out. The relay routes bytes; the application defines their meaning.</p></div>
+            <div class="layer"><h3>Add a distinct contract</h3><p>A new cross-peer service belongs in an explicit <code>x.&lt;vendor&gt;.*</code> capability, with its own version, authentication tier, consent, and quotas. The Rust framework supports request, stream, and datagram features. Registering a module does not automatically expose it to JavaScript: a consumer and any required bridge integration must also be implemented.</p></div>
+          </div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Application building blocks"><table><caption>Existing examples and possible applications</caption><thead><tr><th scope="col">Experience</th><th scope="col">Reusable foundation</th><th scope="col">Implementation boundary</th></tr></thead><tbody>
+            <tr><th scope="row">Games &amp; shared drawing</th><td>Hosted assets, native identity bridge, and low-latency session datagrams.</td><td>Cursor sharing, brick-breaker, and shared drawing are in-tree examples. Application logic runs in the participating clients.</td></tr>
+            <tr><th scope="row">Collaborative tools</th><td>The same interface hosting and ephemeral update path could support a whiteboard, shared pointer, or live workshop surface.</td><td>Durable documents need additional synchronization, reliable delivery, conflict resolution, and client-owned persistence. The relay is not a document store.</td></tr>
+            <tr><th scope="row">Node access portals</th><td>Identity-bound access status and acceptance routes, served through the in-app portal.</td><td>The existing gate can admit a portal-only guest before full relay access. A gate grants access to this node's services, not a new identity or universal room membership.</td></tr>
+            <tr><th scope="row">Session coordination</th><td><code>x.conquerd.matchmaker.v1</code> demonstrates lobby create/join/leave and a ready roster that can be wired to the game relay.</td><td>This is an opt-in reference module, not an automatically enabled matchmaking service or a shipped general-purpose app backend.</td></tr>
+          </tbody></table></div>
+          <h3 style="margin-top:28px">An access portal, step by step</h3>
+          <ol class="steps"><li><strong>Establish the invited relationship</strong>The native client authenticates to the supernode. Where its access policy requires a gate, the node can issue a portal-only relay grant rather than full service access.</li><li><strong>Load the gate on the restricted connection</strong>The page is reachable over <code>web.host.app.v1</code> while room membership, relay datagram forwarding, and reliable relay signaling remain unavailable to the portal-only guest.</li><li><strong>Resolve access against the authenticated peer</strong><code>/api/access/status</code> reports the caller's access state; <code>/api/access/accept</code> requests admission. The node binds these operations to the QUIC peer identity, not a page-supplied account name.</li><li><strong>Enter the permitted experience</strong>Once granted, the client can establish full relay access. Feature negotiation, consent where required, and room membership still apply; passing the portal gate does not bypass them.</li></ol>
+          <div class="twocol"><div class="boundary"><h3>What the framework supplies</h3><ul><li>Device-held identity and authenticated transport.</li><li>Hosted in-app interfaces and a native channel bridge.</li><li>Feature contracts, authorization gates, and traffic quotas.</li><li>Opaque relay forwarding without server-side gameplay logic.</li></ul></div><div class="boundary restricted"><h3>What an app must still design</h3><ul><li>Its data format, validation, and participant permissions.</li><li>Loss handling: datagrams can be dropped or arrive out of order.</li><li>State recovery and late-join snapshots from participating peers.</li><li>End-to-end protection for private app payloads; opaque forwarding alone is not encryption.</li></ul></div></div>
+          <p class="note">Hosting is a separate trust boundary: the operator supplies the page's code and assets. An authenticated connection identifies the host; it does not make arbitrary hosted JavaScript trustworthy. The game SDK currently routes through <code>game.relay.v1</code>; passing another feature ID does not invoke a custom module. Native room chat, voice, and files stay in the desktop client, and a WASM plugin sandbox remains future work.</p>
+          <p style="margin-top:24px"><a href="https://github.com/ConquerD/ConquerD/blob/develop/web-sdk/conquerd.mjs">Portal JavaScript SDK</a> &nbsp;&middot;&nbsp; <a href="https://github.com/ConquerD/ConquerD/tree/develop/games">Example experiences</a> &nbsp;&middot;&nbsp; <a href="https://github.com/ConquerD/ConquerD/blob/develop/rust/conquerd-features/src/examples.rs">Custom module reference</a></p>
+        </section>
+        <section id="media">
+          <div class="section-no">06 / Content paths</div><h2>Different media. Deliberate delivery.</h2>
+          <div class="twocol"><div><h3>Voice</h3><p>Opus audio travels over QUIC datagrams. Room voice can fall back to signed WebSocket messages. Room audio is end-to-end sealed; active-speaker forwarding uses packet arrival, not decoded sound.</p></div><div><h3>Video</h3><p>VP8 is available across platforms; Windows also supports Media Foundation H.264. Direct calls negotiate a codec. Room senders select a codec and stamp each frame. Room video has no WebSocket fallback.</p></div><div><h3>Shared audio &amp; synchronization</h3><p>A session clock timestamps video and shared audio together. Audio-led playout holds or drops video to synchronize it; video without a current audio anchor free-runs. Shared audio follows the viewed video, independently of voice mute.</p></div><div><h3>Files are offered, then pulled</h3><p>Room file offers contain metadata, not an automatic upload. An accepting member requests chunks from the originator, which sends only to that recipient. Large transfers stream from disk without compression; the supernode stores no file copy.</p></div></div>
+          <p class="note">The in-app portal is not this public website. Hosted pages load inside the native client through <code>conquerd://</code> and <code>web.host.app.v1</code>. Games use <code>window.conquerd</code> and the authenticated channel bridge, not a public browser transport.</p>
+        </section>
+        <section id="cluster">
+          <div class="section-no">07 / State &amp; operations</div><h2>Durable on clients. Ephemeral on relays.</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="State ownership"><table><caption>Where state belongs</caption><thead><tr><th scope="col">Owner</th><th scope="col">Persistent state</th><th scope="col">Runtime state</th></tr></thead><tbody><tr><th scope="row">Native client</th><td>Identity, trusted peers, local chat history, settings, encrypted room definitions.</td><td>Sessions, negotiated capabilities, media pipelines, room keys.</td></tr><tr><th scope="row">Supernode</th><td>Its identity, peer trust, feature manifest, invite configuration, endpoint mailbox.</td><td>SFU rooms, membership, routing, quotas, and cluster links. No content archive.</td></tr></tbody></table></div>
+          <p class="lead" style="margin-top:24px">Clients rematerialize saved rooms on connection. Empty user-created rooms are collected after 15 minutes; the built-in default room remains. Removing a room from the sidebar is a local action, not server-side deletion.</p>
+          <div class="twocol"><div><h3>Cluster replication</h3><p>Members exchange room existence, client trust, Space roots, and opaque room chat/audio frames over authenticated cluster QUIC links. They do not replicate private-room per-peer ACLs. Space proofs, local invite tokens, and creator admission cover room access.</p></div><div><h3>Cluster operations</h3><p>The separate supernode manager provisions and deploys nodes over SSH. Cluster UDP ports are restricted to member IPs. Redeploy preserves the roster and cluster firewall rules; roster changes use an explicit cluster sync.</p></div></div>
+        </section>
+        <section id="code">
+          <div class="section-no">08 / Implementation</div><h2>Three workspaces. Clear ownership.</h2>
+          <div class="layers"><div class="layer"><a href="https://github.com/ConquerD/ConquerD/tree/develop/rust/conquerd-client"><code>conquerd-client</code></a><p>Separate desktop workspace. Qt / QML connects through CXX-Qt models and AppBridge to ConnectionManager, local stores, and media pipelines. Headless builds support tests.</p></div><div class="layer"><a href="https://github.com/ConquerD/ConquerD/tree/develop/rust"><code>rust/</code></a><p>The outer workspace contains the shared features registry, supernode, installer, and first-party Opus and VP8 wrappers. The installer handles release download, verification, and application.</p></div><div class="layer"><a href="https://github.com/ConquerD/ConquerD/tree/develop/rust/conquerd-supernode-manager"><code>conquerd-supernode-manager</code></a><p>Separate operations workspace. Inventory, SSH transport, provisioning, cluster configuration, and a CLI / terminal dashboard. It is not an identity backend.</p></div></div>
+        </section>
+        <section id="status">
+          <div class="section-no">09 / Current state</div><h2>Implemented does not mean finished everywhere.</h2>
+          <div class="twocol"><div><div class="status">IMPLEMENTED</div><ul><li>Direct and relayed QUIC, capability negotiation, and encrypted room content.</li><li>Cross-platform VP8 and camera capture backends for Windows, Linux, and macOS.</li><li>Shared-audio synchronization and adaptive video bitrate.</li><li>Space Layer 1: authenticated room trees, proofs, and grants.</li></ul></div><div><div class="status limited">LIMITS &amp; OPEN WORK</div><ul><li>Screen/window capture and shared-audio capture remain Windows-only.</li><li>Non-Windows capture still needs real-hardware validation; the full two-client and room video checklist remains open.</li><li>Space Layer 2 cryptography and a WASM plugin sandbox are deferred.</li><li>Room key epochs are eight-bit; a simultaneous-join bootstrap race can require a later membership snapshot to recover.</li></ul></div></div>
+          <p class="note">Capture is a privacy boundary: whole-screen sharing includes pop-ups. On Windows versions below build 20348, per-application audio capture falls back to whole-machine audio rather than silence.</p>
+          <p style="margin-top:24px"><a href="https://github.com/ConquerD/ConquerD/blob/develop/agents.md">Architecture invariants</a> &nbsp;&middot;&nbsp; <a href="https://github.com/ConquerD/ConquerD/blob/develop/docs/THREAT_MODEL.md">Threat model</a> &nbsp;&middot;&nbsp; <a href="https://github.com/ConquerD/ConquerD/blob/develop/backlog.md">Open work</a></p>
+        </section>
+      </article>
+    </div>
+  </main>
+  <footer><div class="shell footer-inner"><span>ConquerD / Architecture reference</span><a href="index.html">Back to ConquerD</a><a href="https://github.com/ConquerD/ConquerD/blob/develop/PRIVACY.md">Privacy disclosures</a></div></footer>
+</body>
+</html>
